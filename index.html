@@ -1,0 +1,4671 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ATAS: Any Time, Any Space: A World-State-Centric Framework for Agentic Video Generation</title>
+    <meta name="description" content="Video results, paper figures, and quantitative tables for ATAS: a world-state-centric framework for agentic video generation.">
+    <meta name="theme-color" content="#000000">
+    <link rel="icon" href="data:,">
+    <style>*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #000;
+  --text: #fff;
+  --accent: #f6f1df;
+  --grad: linear-gradient(135deg, #61a5ff, #d660c8);
+  --grad-3: linear-gradient(90deg, #61a5ff, #d660c8 55%, #f6f1df);
+  --sans: "Outfit", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue",
+    Helvetica, Arial, "Noto Sans", sans-serif;
+  --serif: "Playfair Display", "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --bleed: min(1680px, calc(100vw - 36px));
+  --nav-h: 72px;
+  color-scheme: dark;
+}
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--nav-h);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1200px 720px at 50% -180px, rgba(97, 165, 255, 0.24), transparent 70%),
+    radial-gradient(900px 620px at 88% 380px, rgba(214, 96, 200, 0.16), transparent 70%),
+    radial-gradient(760px 520px at 8% 640px, rgba(246, 241, 223, 0.07), transparent 70%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(214, 96, 200, 0.45);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(97, 165, 255, 0.9);
+  outline-offset: 3px;
+}
+
+a {
+  color: #dfe6f1;
+}
+
+.aurora {
+  animation: drift 40s var(--ease) infinite alternate;
+  background:
+    radial-gradient(38vw 30vw at 18% 30%, rgba(97, 165, 255, 0.075), transparent 70%),
+    radial-gradient(34vw 28vw at 82% 64%, rgba(214, 96, 200, 0.07), transparent 70%),
+    radial-gradient(30vw 22vw at 50% 100%, rgba(246, 241, 223, 0.035), transparent 70%);
+  inset: -10vh -10vw;
+  pointer-events: none;
+  position: fixed;
+  will-change: transform;
+  z-index: 0;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(-1.5vw, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(1.5vw, -2vh, 0) scale(1.06);
+  }
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 1280px;
+  padding: 0 24px 56px;
+  position: relative;
+  z-index: 1;
+}
+
+.masthead {
+  align-items: center;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: clip;
+  padding: 0 clamp(16px, 4vw, 64px);
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.masthead-media {
+  inset: 0;
+  position: absolute;
+}
+
+.masthead-video {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 1.2s ease;
+  width: 100%;
+}
+
+.masthead-video.active {
+  opacity: 1;
+}
+
+.masthead-shade {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.64)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.46) 0%, rgba(0, 0, 0, 0.7) 82%, #000 100%);
+  inset: 0;
+  position: absolute;
+}
+
+.masthead-content {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  max-width: 1240px;
+  padding: 110px 0 80px;
+  position: relative;
+}
+
+h1 {
+  font-weight: 400;
+  margin: 0 0 30px;
+}
+
+h1 span {
+  display: block;
+}
+
+h1 .nowrap {
+  display: inline;
+  white-space: nowrap;
+}
+
+.wordmark {
+  background: var(--grad-3);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  padding-left: 0.34em;
+}
+
+/* 标题区大字是 "Any Time, Any Space"，比原来的 ATAS 长，字号相应收小；窄屏在逗号后换成两行 */
+h1 .wordmark {
+  background: none;
+  color: #fff;
+  font-size: clamp(44px, 6.4vw, 96px);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 16px;
+  padding-left: 0;
+}
+
+h1 .h1-soft {
+  color: #fff;
+  font-size: clamp(22px, 2.8vw, 46px);
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  max-width: 1120px;
+}
+
+.authors {
+  color: rgba(255, 255, 255, 0.88);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: clamp(14px, 1.2vw, 17px);
+  font-weight: 500;
+  gap: 6px 22px;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  max-width: 820px;
+}
+
+.authors a,
+.tech-authors a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.authors a:hover,
+.tech-authors a:hover,
+.authors a:focus-visible,
+.tech-authors a:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+.resource-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-top: clamp(28px, 6vh, 64px);
+}
+
+.resource-links a {
+  align-items: center;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background: rgba(12, 14, 18, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 650;
+  gap: 8px;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 132px;
+  padding: 0 20px;
+  text-decoration: none;
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease),
+    transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.resource-links svg {
+  flex: none;
+  height: 16px;
+  width: 16px;
+}
+
+.resource-links a:hover {
+  background: rgba(12, 14, 18, 0.5);
+  border-color: rgba(255, 255, 255, 0.7);
+  transform: translateY(-1px);
+}
+
+.resource-links a.primary {
+  background: var(--grad);
+  border-color: transparent;
+}
+
+.resource-links a.primary:hover {
+  box-shadow: 0 12px 30px rgba(214, 96, 200, 0.35);
+}
+
+.premiere-heading {
+  margin: 0 auto 34px;
+  max-width: 980px;
+  text-align: center;
+}
+
+.premiere-heading h2,
+.section-title {
+  font-family: var(--serif);
+  font-size: clamp(32px, 4vw, 50px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.scene-hero {
+  padding-top: 120px;
+  position: relative;
+}
+
+.premiere-stage {
+  background:
+    linear-gradient(90deg, transparent, rgba(97, 165, 255, 0.34), rgba(214, 96, 200, 0.28), transparent) top / 100% 1px no-repeat,
+    radial-gradient(circle at 14% 6%, rgba(97, 165, 255, 0.2), transparent 24%),
+    radial-gradient(circle at 88% 9%, rgba(214, 96, 200, 0.18), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.016));
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 22px;
+  box-shadow:
+    0 44px 120px rgba(0, 0, 0, 0.5),
+    0 22px 90px rgba(97, 165, 255, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  margin-left: calc(50% - var(--bleed) / 2);
+  padding: 26px;
+  width: var(--bleed);
+}
+
+.hero-card {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(97, 165, 255, 0.26), transparent 30%),
+    radial-gradient(circle at 84% 4%, rgba(214, 96, 200, 0.18), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.078), rgba(255, 255, 255, 0.018));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  box-shadow:
+    0 34px 96px rgba(0, 0, 0, 0.54),
+    0 0 0 1px rgba(97, 165, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  position: relative;
+}
+
+.hero-frame {
+  aspect-ratio: 16 / 9;
+  background: #030405;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 34px 110px rgba(0, 0, 0, 0.52);
+  max-height: 82vh;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.hero-frame video {
+  background: #000;
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.play-overlay {
+  appearance: none;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.18), transparent 60%);
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  inset: 0;
+  place-items: center;
+  position: absolute;
+  transition: opacity 0.3s var(--ease);
+}
+
+.play-overlay .disc {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  background: rgba(10, 12, 18, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 6px rgba(255, 255, 255, 0.07),
+    0 12px 34px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  display: grid;
+  height: 50px;
+  place-items: center;
+  transition: transform 0.35s var(--ease), background 0.35s var(--ease), border-color 0.35s var(--ease),
+    box-shadow 0.35s var(--ease);
+  width: 50px;
+}
+
+.play-overlay svg {
+  height: 18px;
+  margin-left: 3px;
+  width: 18px;
+}
+
+.play-overlay:hover .disc,
+.play-overlay:focus-visible .disc {
+  background: linear-gradient(135deg, rgba(97, 165, 255, 0.9), rgba(214, 96, 200, 0.9));
+  border-color: transparent;
+  box-shadow: 0 14px 40px rgba(214, 96, 200, 0.35);
+  transform: scale(1.08);
+}
+
+.hero-frame .play-overlay .disc {
+  height: 86px;
+  width: 86px;
+}
+
+.hero-frame .play-overlay svg {
+  height: 30px;
+  margin-left: 5px;
+  width: 30px;
+}
+
+.engaged > .play-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.visit-timeline {
+  margin-top: 22px;
+  position: relative;
+}
+
+.rv-icon {
+  color: var(--accent);
+  flex: none;
+  height: 13px;
+  width: 13px;
+}
+
+.vt-scroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.vt-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.vt-inner {
+  min-width: 560px;
+  position: relative;
+}
+
+.can-scroll:not(.at-end) {
+  -webkit-mask-image: linear-gradient(90deg, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, #000 86%, transparent);
+}
+
+.vt-handoffs {
+  height: 44px;
+  position: relative;
+}
+
+.vt-chip {
+  align-items: center;
+  appearance: none;
+  background: rgba(8, 10, 15, 0.92);
+  border: 1px solid rgba(246, 241, 223, 0.28);
+  border-radius: 999px;
+  color: var(--accent);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  gap: 8px;
+  height: 28px;
+  padding: 0 11px 0 10px;
+  position: absolute;
+  top: 0;
+  transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  white-space: nowrap;
+}
+
+.vt-chip:hover,
+.vt-chip.near {
+  background: rgba(32, 28, 22, 0.96);
+  border-color: rgba(246, 241, 223, 0.72);
+  box-shadow: 0 0 24px rgba(246, 241, 223, 0.18);
+}
+
+.vt-chip::after {
+  background: linear-gradient(rgba(246, 241, 223, 0.75), rgba(246, 241, 223, 0));
+  content: "";
+  height: 16px;
+  left: var(--tick, 50%);
+  position: absolute;
+  top: 100%;
+  width: 1px;
+}
+
+.vt-chip .dia {
+  background: var(--grad);
+  border-radius: 1.5px;
+  box-shadow: 0 0 10px rgba(214, 96, 200, 0.8);
+  flex: none;
+  height: 8px;
+  transform: rotate(45deg);
+  width: 8px;
+}
+
+.vt-chip time {
+  color: #aeb5c2;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.vt-track {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  height: 72px;
+  overflow: hidden;
+  position: relative;
+}
+
+.vt-seg {
+  appearance: none;
+  background: linear-gradient(180deg, rgba(var(--room-rgb), 0.17), rgba(var(--room-rgb), 0.03) 85%);
+  border: 0;
+  bottom: 0;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  overflow: hidden;
+  padding: 14px 14px 10px;
+  position: absolute;
+  text-align: left;
+  top: 0;
+  transition: background 0.3s var(--ease);
+}
+
+.vt-seg + .vt-seg {
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.65);
+}
+
+.vt-seg::before {
+  background: rgb(var(--room-rgb));
+  content: "";
+  height: 3px;
+  left: 0;
+  opacity: 0.85;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.vt-seg:hover,
+.vt-seg.active {
+  background: linear-gradient(180deg, rgba(var(--room-rgb), 0.32), rgba(var(--room-rgb), 0.07) 85%);
+}
+
+.vt-seg strong {
+  align-items: center;
+  display: flex;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 7px;
+  line-height: 1.25;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.vt-seg strong span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vt-seg small {
+  color: #aeb5c2;
+  display: block;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  margin-top: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.again {
+  background: var(--grad);
+  border-radius: 999px;
+  color: #fff;
+  flex: none;
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+
+.vt-boundary {
+  background: linear-gradient(180deg, #f6f1df, rgba(246, 241, 223, 0.15));
+  bottom: 0;
+  box-shadow: 0 0 14px rgba(246, 241, 223, 0.55);
+  margin-left: -1px;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 2px;
+}
+
+.vt-progress {
+  background: var(--grad-3);
+  bottom: 0;
+  height: 3px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 0;
+}
+
+.vt-playhead {
+  background: #fff;
+  bottom: 0;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.85);
+  left: 0;
+  margin-left: -1px;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transition: opacity 0.3s;
+  width: 2px;
+}
+
+.visit-timeline.started .vt-playhead {
+  opacity: 1;
+}
+
+.vt-preview {
+  aspect-ratio: 16 / 9;
+  background: #0b0d11 center / cover no-repeat;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translateY(6px) scale(0.97);
+  transition: opacity 0.18s var(--ease), transform 0.18s var(--ease);
+  width: 240px;
+  z-index: 20;
+}
+
+.vt-preview.show {
+  opacity: 1;
+  transform: none;
+}
+
+.vt-preview span {
+  bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  left: 10px;
+  position: absolute;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
+}
+
+.plan-preview {
+  background:
+    radial-gradient(circle at 50% 8%, rgba(246, 241, 223, 0.12), transparent 23%),
+    radial-gradient(circle at 82% 17%, rgba(214, 96, 200, 0.2), transparent 30%),
+    radial-gradient(circle at 18% 20%, rgba(97, 165, 255, 0.22), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.018));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 22px;
+  box-shadow:
+    0 54px 150px rgba(97, 165, 255, 0.12),
+    0 48px 145px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  margin: 120px 0 0 calc(50% - var(--bleed) / 2);
+  overflow: hidden;
+  padding: 0 0 30px;
+  position: relative;
+  width: var(--bleed);
+}
+
+.plan-preview::before {
+  background: linear-gradient(90deg, transparent, rgba(97, 165, 255, 0.72), rgba(214, 96, 200, 0.66), transparent);
+  content: "";
+  height: 2px;
+  left: 5%;
+  position: absolute;
+  right: 5%;
+  top: 0;
+}
+
+.preview-copy {
+  margin: 0 auto;
+  max-width: 940px;
+  padding: 48px 20px 34px;
+  text-align: center;
+}
+
+.world-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 10px 24px 6px;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-width: thin;
+}
+
+.world-inner {
+  min-width: 880px;
+  position: relative;
+}
+
+.wt-row {
+  display: flex;
+  gap: 28px;
+}
+
+.wt-card {
+  appearance: none;
+  background: rgba(6, 8, 12, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex: var(--grow) 1 0;
+  flex-direction: column;
+  font: inherit;
+  min-width: 132px;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  text-align: left;
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), border-color 0.35s var(--ease);
+}
+
+.wt-card::before {
+  background: rgb(var(--room-rgb));
+  content: "";
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 2;
+}
+
+.wt-card.revisit {
+  background:
+    linear-gradient(#07090d, #07090d) padding-box,
+    linear-gradient(135deg, rgba(97, 165, 255, 0.95), rgba(214, 96, 200, 0.95), rgba(246, 241, 223, 0.9)) border-box;
+  border-color: transparent;
+  box-shadow: 0 16px 44px rgba(214, 96, 200, 0.14);
+}
+
+.plan-preview .wt-card:hover {
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(97, 165, 255, 0.3);
+  transform: translateY(-4px);
+}
+
+.wt-card.playing {
+  box-shadow:
+    0 0 0 1px rgba(246, 241, 223, 0.55),
+    0 18px 48px rgba(97, 165, 255, 0.22);
+}
+
+.wt-media {
+  aspect-ratio: 16 / 9;
+  background: #0d1117;
+  display: block;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.wt-media img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s var(--ease);
+  width: 100%;
+}
+
+.plan-preview .wt-card:hover .wt-media img {
+  transform: scale(1.045);
+}
+
+.wt-media::after {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent 55%);
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.wt-index {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  left: 10px;
+  padding: 2px 7px;
+  position: absolute;
+  top: 12px;
+  z-index: 1;
+}
+
+.wt-media .again {
+  position: absolute;
+  right: 10px;
+  top: 12px;
+  z-index: 1;
+}
+
+.wt-body {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px 14px;
+}
+
+.wt-body strong {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wt-time {
+  color: #d5dbe5;
+  font-family: var(--mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.wt-node {
+  background: #07090d;
+  border: 1px solid rgba(246, 241, 223, 0.45);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(214, 96, 200, 0.45);
+  color: var(--accent);
+  display: grid;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  place-items: center;
+  pointer-events: none;
+  position: absolute;
+  width: 24px;
+  z-index: 3;
+}
+
+.wt-node svg {
+  height: 12px;
+  width: 12px;
+}
+
+.wt-link {
+  background: repeating-linear-gradient(180deg, rgba(246, 241, 223, 0.42) 0 4px, transparent 4px 8px);
+  margin-left: -0.5px;
+  pointer-events: none;
+  position: absolute;
+  width: 1px;
+  z-index: 2;
+}
+
+.wt-axis {
+  height: 42px;
+  margin-top: 36px;
+  position: relative;
+}
+
+.wt-axis::before {
+  background: linear-gradient(90deg, rgba(97, 165, 255, 0.65), rgba(214, 96, 200, 0.6), rgba(246, 241, 223, 0.55));
+  content: "";
+  height: 1px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 8px;
+}
+
+.wt-tick {
+  align-items: center;
+  color: #9aa1ad;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  gap: 6px;
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.wt-tick::before {
+  background: #0a0c10;
+  border: 2px solid rgba(246, 241, 223, 0.75);
+  border-radius: 50%;
+  content: "";
+  height: 11px;
+  margin-top: 3px;
+  width: 11px;
+}
+
+.wt-tick.first {
+  align-items: flex-start;
+  transform: none;
+}
+
+.wt-tick.last {
+  align-items: flex-end;
+  transform: translateX(-100%);
+}
+
+.wt-tick.handoff {
+  color: var(--accent);
+}
+
+.wt-tick.handoff::before {
+  background: var(--grad);
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(214, 96, 200, 0.7);
+}
+
+.wt-axis-label {
+  color: #7f828a;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  position: absolute;
+  right: 0;
+  text-transform: uppercase;
+  top: -24px;
+}
+
+.revisit-slide {
+  padding: 10px 24px 6px;
+}
+
+.revisit-card {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(214, 96, 200, 0.16), transparent 42%),
+    radial-gradient(circle at 96% 10%, rgba(97, 165, 255, 0.14), transparent 40%),
+    linear-gradient(180deg, rgba(10, 13, 19, 0.92), rgba(6, 7, 10, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 20px 60px rgba(0, 0, 0, 0.4);
+  column-gap: clamp(24px, 3vw, 44px);
+  display: grid;
+  grid-template-areas:
+    "kicker strip"
+    "title strip";
+  grid-template-columns: minmax(0, 0.34fr) minmax(0, 0.66fr);
+  grid-template-rows: auto 1fr;
+  padding: 22px 24px 24px;
+}
+
+.rc-kicker {
+  align-items: center;
+  color: #cbd7e8;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  font-weight: 800;
+  gap: 10px;
+  grid-area: kicker;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rc-kicker i {
+  background: rgb(var(--room-rgb));
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(var(--room-rgb), 0.8);
+  height: 8px;
+  width: 8px;
+}
+
+.rc-kicker time {
+  color: #9aa1ad;
+  font-family: var(--mono);
+  letter-spacing: 0;
+}
+
+.rc-title {
+  font-family: var(--serif);
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 600;
+  grid-area: title;
+  line-height: 1.15;
+  margin: 8px 0 4px;
+}
+
+.rc-strip {
+  align-items: start;
+  align-self: center;
+  display: grid;
+  gap: 8px;
+  grid-area: strip;
+  grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr) 20px minmax(0, 1fr);
+}
+
+.rc-arrow {
+  align-self: center;
+  color: var(--accent);
+  display: grid;
+  margin-top: -34px;
+  opacity: 0.7;
+  place-items: center;
+}
+
+.rc-arrow svg {
+  height: 18px;
+  width: 18px;
+}
+
+.rc-shot {
+  appearance: none;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  font: inherit;
+  padding: 0;
+  text-align: left;
+}
+
+.rc-shot.static {
+  cursor: default;
+}
+
+.rc-shot .frame {
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9px;
+  display: block;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.3s var(--ease), border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.rc-shot img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.plan-preview .rc-shot:not(.static):hover .frame {
+  border-color: rgba(97, 165, 255, 0.65);
+  box-shadow: 0 14px 34px rgba(97, 165, 255, 0.16);
+  transform: translateY(-2px);
+}
+
+.rc-shot.projection .frame {
+  border-color: rgba(97, 165, 255, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(97, 165, 255, 0.18),
+    0 12px 34px rgba(97, 165, 255, 0.16);
+}
+
+.rc-shot .cap {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.35;
+  margin-top: 8px;
+}
+
+.rc-shot .cap b {
+  color: #fff;
+  display: block;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.rc-shot .cap b time {
+  color: #8f96a3;
+  font-family: var(--mono);
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.rc-shot .cap span {
+  color: #aeb5c2;
+  display: block;
+  margin-top: 2px;
+}
+
+.comparison-section {
+  padding-top: 120px;
+}
+
+.section-head {
+  margin: 0 auto 34px;
+  max-width: 980px;
+  text-align: center;
+}
+
+.comparison-board {
+  margin-left: calc(50% - var(--bleed) / 2);
+  width: var(--bleed);
+}
+
+.comparison-tab {
+  align-items: center;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: #cbd7e8;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.comparison-tab small {
+  color: #7f828a;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.comparison-tab:hover {
+  background: rgba(97, 165, 255, 0.12);
+  border-color: rgba(97, 165, 255, 0.5);
+  color: #fff;
+}
+
+.comparison-tab[aria-selected="true"] {
+  background: var(--grad);
+  border-color: transparent;
+  color: #fff;
+}
+
+.comparison-tab[aria-selected="true"] small {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.comparison-summary {
+  align-content: start;
+  display: grid;
+  gap: 14px;
+  grid-area: summary;
+  padding: 2px 0 4px;
+}
+
+.comparison-summary h3 {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 650;
+  gap: 4px 14px;
+  line-height: 1.2;
+}
+
+.comparison-summary h3 small {
+  color: #91bfff;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.comparison-summary p {
+  color: #aeb5c2;
+  font-size: 14.5px;
+  line-height: 1.6;
+  margin-top: 10px;
+  max-width: 840px;
+}
+
+.route {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-start;
+  max-width: 720px;
+}
+
+.route span {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  color: #dfe4ec;
+  font-size: 12px;
+  font-weight: 650;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.route span.again-stop {
+  align-items: center;
+  background: rgba(214, 96, 200, 0.12);
+  border-color: rgba(214, 96, 200, 0.5);
+  display: inline-flex;
+  gap: 6px;
+}
+
+.route span.again-stop .rv-icon {
+  height: 12px;
+  width: 12px;
+}
+
+.route i {
+  color: #5d636d;
+  display: grid;
+  place-items: center;
+}
+
+.route i svg {
+  height: 12px;
+  width: 12px;
+}
+
+.route .shots {
+  background: transparent;
+  border-color: transparent;
+  color: #8d929b;
+  font-family: var(--mono);
+}
+
+.comparison-stage {
+  align-items: start;
+  display: grid;
+  gap: 18px 20px;
+  grid-template-areas:
+    "summary others"
+    "ours others";
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+}
+
+.comparison-others {
+  container: others / inline-size;
+  display: grid;
+  gap: 12px;
+  grid-area: others;
+}
+
+.method-card {
+  background: #090a0c;
+  border: 1px solid #252a30;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.3s var(--ease);
+}
+
+.method-card:hover {
+  border-color: #3a414b;
+}
+
+.method-card.ours {
+  background:
+    linear-gradient(#080b10, #080b10) padding-box,
+    linear-gradient(135deg, #61a5ff, #d660c8, #f6f1df) border-box;
+  border: 1px solid transparent;
+  box-shadow:
+    0 0 0 1px rgba(97, 165, 255, 0.3),
+    0 22px 58px rgba(97, 165, 255, 0.16);
+  grid-area: ours;
+}
+
+.comparison-stage > .method-card.ours {
+  position: sticky;
+  top: calc(var(--nav-h) + var(--bar-h, 0px) + 14px);
+}
+
+.comparison-others .method-card {
+  display: grid;
+  grid-template-areas:
+    "media top"
+    "list list";
+  grid-template-columns: minmax(0, 0.46fr) minmax(0, 0.54fr);
+  grid-template-rows: auto 1fr;
+}
+
+.comparison-others .media {
+  align-self: start;
+  grid-area: media;
+}
+
+.comparison-others .method-body {
+  display: contents;
+}
+
+.comparison-others .method-top {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 6px;
+  grid-area: top;
+  justify-content: flex-start;
+  padding: 12px 14px 0;
+}
+
+.comparison-others .evidence {
+  align-self: start;
+  grid-area: list;
+  margin: 12px 14px 14px;
+}
+
+@container others (min-width: 520px) {
+  .comparison-others .method-card {
+    grid-template-areas:
+      "media top"
+      "media list";
+    grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
+  }
+
+  .comparison-others .method-top {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .comparison-others .evidence {
+    margin-top: 10px;
+  }
+}
+
+.ours-badge {
+  background: var(--grad);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+}
+
+.media {
+  aspect-ratio: 16 / 9;
+  background: #0d1014;
+  flex: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.media video {
+  background: #000;
+  display: block;
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
+.method-body {
+  flex: 1 1 auto;
+  padding: 14px 14px 16px;
+}
+
+.method-card.ours .method-body {
+  flex: none;
+  padding: 16px 18px 18px;
+}
+
+.method-top {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.method-top h4 {
+  align-items: center;
+  display: flex;
+  font-size: 17px;
+  font-weight: 700;
+  gap: 9px;
+  line-height: 1.2;
+}
+
+.method-card.ours .method-top h4 {
+  font-size: 21px;
+}
+
+/* 影片时长 */
+.cell-meta {
+  color: #cfd6e2;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.evidence {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(217, 91, 33, 0.13), transparent 48%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+}
+
+.evidence.strength {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(214, 96, 200, 0.17), transparent 48%),
+    radial-gradient(circle at 94% 6%, rgba(97, 165, 255, 0.17), transparent 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border-color: rgba(97, 165, 255, 0.32);
+}
+
+.ev-heading {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  font-size: 11px;
+  font-weight: 850;
+  gap: 9px;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  padding: 2px 2px 0;
+  text-transform: uppercase;
+}
+
+.ev-heading::before {
+  background: #e0713d;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(224, 113, 61, 0.75);
+  content: "";
+  flex: none;
+  height: 7px;
+  transform: rotate(45deg);
+  width: 7px;
+}
+
+.evidence.strength .ev-heading::before {
+  background: var(--grad);
+  box-shadow: 0 0 10px rgba(214, 96, 200, 0.75);
+}
+
+.ev-heading span {
+  color: #7f828a;
+  font-family: var(--mono);
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-left: auto;
+}
+
+.method-card.ours .evidence {
+  align-items: start;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.method-card.ours .ev-heading {
+  grid-column: 1 / -1;
+}
+
+.ev-item {
+  align-items: baseline;
+  appearance: none;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(217, 91, 33, 0.3);
+  border-radius: 7px;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: 2px 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 7px 10px;
+  text-align: left;
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  width: 100%;
+}
+
+.evidence.strength .ev-item {
+  border-color: rgba(97, 165, 255, 0.36);
+}
+
+.ev-item:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(217, 91, 33, 0.62);
+}
+
+.evidence.strength .ev-item:hover {
+  border-color: rgba(97, 165, 255, 0.72);
+}
+
+.ev-item.current {
+  box-shadow:
+    0 0 0 1px rgba(246, 241, 223, 0.6),
+    0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.ev-item time {
+  color: #f0a37e;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.evidence.strength .ev-item time {
+  color: #9cc6ff;
+}
+
+.ev-item strong {
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.32;
+}
+
+details.ev-item {
+  cursor: auto;
+  display: block;
+  padding: 0;
+}
+
+.ev-item > summary {
+  align-items: baseline;
+  cursor: pointer;
+  display: grid;
+  gap: 2px 10px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  list-style: none;
+  padding: 7px 10px;
+}
+
+.ev-item > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ev-toggle {
+  align-items: center;
+  color: #8d929b;
+  display: inline-flex;
+  font-size: 10.5px;
+  font-weight: 800;
+  gap: 6px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.25s var(--ease);
+}
+
+.ev-toggle::after {
+  border-bottom: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  content: "";
+  height: 5px;
+  margin-top: -3px;
+  transform: rotate(45deg);
+  transition: transform 0.3s var(--ease), margin 0.3s var(--ease);
+  width: 5px;
+}
+
+details.ev-item[open] .ev-toggle::after {
+  margin-top: 2px;
+  transform: rotate(-135deg);
+}
+
+details.ev-item:hover .ev-toggle,
+details.ev-item[open] .ev-toggle {
+  color: #fff;
+}
+
+.ev-compare {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 2px 8px 8px;
+}
+
+.ev-shot {
+  appearance: none;
+  aspect-ratio: 16 / 9;
+  background: #0d1014;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+}
+
+.ev-shot img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s var(--ease);
+  width: 100%;
+}
+
+.ev-shot::after {
+  border: 1px solid transparent;
+  border-radius: 5px;
+  content: "";
+  inset: 0;
+  position: absolute;
+  transition: border-color 0.25s var(--ease);
+}
+
+.ev-shot:hover::after,
+.ev-shot:focus-visible::after {
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.ev-marks {
+  filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.55));
+  height: 100%;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  transform-origin: 50% 50%;
+  transition: transform 0.45s var(--ease);
+  width: 100%;
+}
+
+.ev-marks ellipse {
+  fill: none;
+  stroke: #ff3b30;
+  stroke-width: 3px;
+  vector-effect: non-scaling-stroke;
+}
+
+.ev-shot:hover img,
+.ev-shot:hover .ev-marks {
+  transform: scale(1.045);
+}
+
+.ev-shot em {
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.74);
+  border-radius: 4px;
+  bottom: 4px;
+  color: #e3e7ee;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  left: 4px;
+  line-height: 1;
+  padding: 3px 6px;
+  position: absolute;
+}
+
+.ev-shot em b {
+  color: #fff;
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin-right: 5px;
+  text-transform: uppercase;
+}
+
+.site-footer {
+  align-items: end;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9aa1ad;
+  display: grid;
+  font-size: 14px;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-top: 120px;
+  padding-top: 32px;
+}
+
+/* 页脚的艺术字按内容宽度排，渐变不被拉长 */
+.footer-mark {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.wordmark.small {
+  font-size: 15px;
+  letter-spacing: 0.3em;
+  padding-left: 0.06em;
+}
+
+.footer-side {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+}
+
+.to-top {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  color: #cbd7e8;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 6px 13px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: border-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.to-top:hover {
+  border-color: rgba(97, 165, 255, 0.55);
+  color: #fff;
+}
+
+.js .reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+}
+
+.js .reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+.paper-section {
+  padding-top: 120px;
+}
+
+
+.paper-figure {
+  background:
+    radial-gradient(circle at 88% 0%, rgba(97, 165, 255, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+  border: 1px solid #272d34;
+  border-radius: 16px;
+  margin: 48px auto 0;
+  max-width: 1200px;
+  padding: 14px 14px 4px;
+}
+
+.paper-figure.wide {
+  margin-left: calc(50% - var(--bleed) / 2);
+  max-width: none;
+  width: var(--bleed);
+}
+
+.figure-plate {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: clamp(8px, 1.4vw, 18px);
+}
+
+.figure-plate img {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.paper-figure figcaption {
+  color: #aeb5c2;
+  font-size: 14.5px;
+  line-height: 1.62;
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: 16px 8px 14px;
+}
+
+.paper-figure figcaption strong,
+.paper-table caption strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.paper-tag {
+  color: #91bfff;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-right: 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table-card {
+  background: rgba(8, 10, 14, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 16px;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow-x: auto;
+  padding: 20px 22px 12px;
+}
+
+.paper-table {
+  border-collapse: collapse;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+}
+
+.paper-table caption {
+  caption-side: top;
+  color: #aeb5c2;
+  font-size: 13.5px;
+  line-height: 1.55;
+  padding-bottom: 14px;
+  text-align: left;
+}
+
+.paper-table th,
+.paper-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 10px 12px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.paper-table th:first-child {
+  text-align: left;
+}
+
+.paper-table thead th {
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  color: #cbd7e8;
+  font-size: 12.5px;
+  font-weight: 750;
+  line-height: 1.3;
+  vertical-align: bottom;
+}
+
+.paper-table tbody th {
+  color: #e6e9ef;
+  font-weight: 600;
+}
+
+.paper-table td {
+  color: #c9cfd9;
+}
+
+.paper-table td small {
+  color: #7f828a;
+  font-size: 11.5px;
+  font-weight: 500;
+  margin-left: 3px;
+}
+
+.paper-table td.b {
+  color: #fff;
+  font-weight: 800;
+}
+
+.paper-table td.u {
+  text-decoration: underline;
+  text-decoration-color: rgba(203, 215, 232, 0.6);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.paper-table tr.group th {
+  color: #91bfff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  padding-top: 18px;
+  text-transform: uppercase;
+}
+
+.paper-table tr.ours > * {
+  background: rgba(97, 165, 255, 0.1);
+}
+
+.paper-table tr.ours th {
+  box-shadow: inset 3px 0 0 #61a5ff;
+  color: #fff;
+  font-weight: 800;
+}
+
+.paper-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+/* Tab. 1：每个 backbone 一个 tbody，左侧是跨六行的模型名 */
+.main-table .model-cell {
+  color: #cbd7e8;
+  font-weight: 750;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.main-table tbody + tbody > tr:first-child > * {
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.citation-block {
+  background: rgba(8, 10, 14, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 16px;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  margin: 0 auto;
+  max-width: 920px;
+  overflow: hidden;
+}
+
+.citation-bar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 12px;
+}
+
+.citation-copy {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  font: 650 13px/1 var(--sans);
+  min-width: 84px;
+  padding: 9px 16px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.citation-copy:hover {
+  background: rgba(97, 165, 255, 0.16);
+  border-color: rgba(97, 165, 255, 0.5);
+}
+
+.citation-copy.done {
+  background: var(--grad);
+  border-color: transparent;
+}
+
+/* 点一下整段选中，和 ZPressor 页面的做法一样 */
+.citation-block pre {
+  color: #c9cfd9;
+  cursor: text;
+  font: 400 14px/1.85 var(--mono);
+  overflow-x: auto;
+  padding: 24px 26px 26px;
+  -webkit-user-select: all;
+  user-select: all;
+  white-space: pre;
+}
+
+.site-nav {
+  align-items: center;
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(14px) saturate(1.15);
+  background: linear-gradient(180deg, rgba(5, 8, 15, 0.72), rgba(5, 8, 15, 0.32) 72%, rgba(5, 8, 15, 0));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  column-gap: 24px;
+  display: grid;
+  grid-template-columns: minmax(110px, 1fr) auto minmax(110px, 1fr);
+  height: var(--nav-h);
+  left: 0;
+  padding: 0 clamp(16px, 4vw, 64px);
+  position: fixed;
+  right: 0;
+  top: 0;
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  z-index: 40;
+}
+
+.site-nav.solid {
+  background: linear-gradient(180deg, rgba(5, 8, 15, 0.92), rgba(5, 8, 15, 0.8));
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.3);
+}
+
+/* 品牌字沿用页脚的 .wordmark.small 艺术字，这里只设置字号和位置。text-box 把盒子的上下边裁剪到大写字母顶端和基线，
+   盒子居中也就是字母居中；网格行不包含顶栏 1px 的底边框，-1px 的下外边距让品牌字按整条顶栏的高度居中 */
+.site-nav .site-brand {
+  font-size: 20px;
+  justify-self: start;
+  margin-bottom: -1px;
+  padding-block: 0.45em;
+  text-box: trim-both cap alphabetic;
+  text-decoration: none;
+}
+
+.site-nav-links {
+  display: flex;
+  font-size: clamp(15px, 1.05vw, 17px);
+  font-weight: 650;
+  gap: clamp(24px, 3vw, 44px);
+  justify-self: center;
+  white-space: nowrap;
+}
+
+.site-nav-links a {
+  color: #fff;
+  opacity: 0.8;
+  padding: 24px 0 20px;
+  position: relative;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.site-nav-links a::after {
+  background: currentColor;
+  border-radius: 999px;
+  bottom: 14px;
+  content: "";
+  height: 2px;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  transform: scaleX(0.4);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.site-nav-links a.active,
+.site-nav-links a:hover {
+  opacity: 1;
+}
+
+.site-nav-links a.active::after,
+.site-nav-links a:hover::after {
+  opacity: 0.95;
+  transform: scaleX(1);
+}
+
+.site-nav-side {
+  align-items: center;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 650;
+  gap: 8px;
+  justify-self: end;
+}
+
+.site-nav-side a {
+  color: #fff;
+  opacity: 0.78;
+  text-decoration: none;
+}
+
+.site-nav-side a:hover {
+  opacity: 1;
+}
+
+.site-nav-side span {
+  opacity: 0.5;
+}
+
+.container.tech-main {
+  padding-top: calc(var(--nav-h) + 40px);
+}
+
+.tech-hero-panel {
+  background: linear-gradient(160deg, rgba(97, 165, 255, 0.16), rgba(214, 96, 200, 0.07) 55%, rgba(16, 21, 35, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 18px;
+  padding: clamp(20px, 3vw, 36px);
+}
+
+.tech-hero-panel h1 {
+  font-size: clamp(28px, 4vw, 54px);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 0 0 16px;
+}
+
+.tech-authors {
+  color: #e9eeff;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 15px;
+  gap: 4px 16px;
+  margin-bottom: 20px;
+}
+
+.tech-stat-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tech-stat-card {
+  background: rgba(8, 12, 20, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.stat-key {
+  color: #91bfff;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 750;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.stat-desc {
+  color: #b9c4df;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.tech-section {
+  padding-top: 72px;
+}
+
+.tech-section-head {
+  align-items: baseline;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.section-index {
+  color: #91bfff;
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tech-section-head h2 {
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+/* Technical Details 照 World-R1 tech 页：面板、卡片、图表网格、要点卡，文字只写短句 */
+.tech-panel {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.04), rgba(97, 165, 255, 0.07));
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  padding: clamp(16px, 2.2vw, 24px);
+}
+
+.tech-panel strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.tech-panel sub {
+  font-size: 0.72em;
+  line-height: 0;
+}
+
+.abstract-text {
+  color: #d3d8e0;
+  font-size: 15.5px;
+  line-height: 1.75;
+}
+
+/* 每节标题下的几行说明 */
+.tech-lede {
+  color: #c9cfd9;
+  font-size: 15.5px;
+  line-height: 1.75;
+  margin: -4px 0 2px;
+  max-width: 1000px;
+}
+
+.tech-card h3 {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.tech-card p {
+  color: #c9cfd9;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.tech-card-grid,
+.finding-grid,
+.tech-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tech-card-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.finding-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tech-grid {
+  align-items: start;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tech-grid > .full-row {
+  grid-column: 1 / -1;
+}
+
+.tech-main .paper-figure {
+  margin-top: 16px;
+  max-width: none;
+}
+
+.tech-main .table-card {
+  margin-top: 16px;
+}
+
+.tech-grid > .paper-figure,
+.tech-grid > .table-card {
+  margin: 0;
+}
+
+.tech-grid > .table-card:not(.full-row) .paper-table th,
+.tech-grid > .table-card:not(.full-row) .paper-table td {
+  padding: 9px 9px;
+}
+
+.finding-card h3 {
+  color: #fff;
+  font-size: clamp(18px, 1.7vw, 22px);
+  font-weight: 750;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.finding-card p:not(.stat-key) {
+  color: #c9cfd9;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1080px) {
+  .tech-stat-grid,
+  .tech-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  .tech-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --nav-h: 60px;
+  }
+
+  .finding-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-nav {
+    column-gap: 12px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 0 14px;
+  }
+
+  .site-nav .site-brand {
+    font-size: 17px;
+  }
+
+  .site-nav-links {
+    font-size: 13px;
+    gap: 16px;
+  }
+
+  .site-nav-links a {
+    padding: 20px 0 18px;
+  }
+
+  .site-nav-links a::after {
+    bottom: 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-nav-side {
+    display: none;
+  }
+
+  /* 右侧 Paper / Code 隐藏后顶栏只剩两列，省下空列的间距留给品牌字；字号按宽度缩小，和导航链接留出间隔 */
+  .site-nav {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .site-nav .site-brand {
+    font-size: 14px;
+  }
+
+  .tech-stat-grid,
+  .tech-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 360 宽和 320 宽的手机上品牌字和三个导航链接仍在一行：字号和链接间距逐级缩小 */
+@media (max-width: 400px) {
+  .site-nav .site-brand {
+    font-size: 12px;
+  }
+
+  .site-nav-links {
+    font-size: 12px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 340px) {
+  .site-nav .site-brand {
+    font-size: 11px;
+  }
+
+  .site-nav-links {
+    font-size: 11px;
+    gap: 8px;
+  }
+}
+
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.cx {
+  display: flow-root;
+  position: relative;
+}
+
+.cx-sentinel {
+  height: 1px;
+  margin-bottom: -1px;
+}
+
+.cx-bar {
+  align-items: center;
+  column-gap: 16px;
+  display: grid;
+  grid-template-areas:
+    "tabs controls"
+    "progress progress";
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: 14px;
+}
+
+.cx-tabs {
+  display: flex;
+  gap: 10px;
+  grid-area: tabs;
+  margin: -6px;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 6px;
+  position: relative;
+  scrollbar-width: none;
+}
+
+.cx-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.cx-tab {
+  align-items: center;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #cbd7e8;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 1 auto;
+  font: inherit;
+  gap: 12px;
+  min-height: 52px;
+  min-width: 0;
+  padding: 7px 16px 7px 7px;
+  position: relative;
+  text-align: left;
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease),
+    box-shadow 0.25s var(--ease);
+}
+
+.cx-tab:hover {
+  background: rgba(97, 165, 255, 0.1);
+  border-color: rgba(97, 165, 255, 0.45);
+  color: #fff;
+}
+
+.cx-tab[aria-selected="true"] {
+  background:
+    linear-gradient(#0a0d13, #0a0d13) padding-box,
+    linear-gradient(135deg, #61a5ff, #d660c8, #f6f1df) border-box;
+  border-color: transparent;
+  box-shadow: 0 12px 30px rgba(97, 165, 255, 0.16);
+  color: #fff;
+}
+
+.cx-thumb {
+  aspect-ratio: 16 / 9;
+  background: #0d1117;
+  border-radius: 7px;
+  display: block;
+  flex: none;
+  overflow: hidden;
+  width: 64px;
+}
+
+.cx-thumb img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.wt-mini {
+  display: flex;
+  gap: 2px;
+  padding: 10px 7px;
+}
+
+.wt-mini i {
+  background: rgb(var(--room-rgb));
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(var(--room-rgb), 0.55);
+  flex-basis: 0;
+}
+
+.cx-tab-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cx-tab-text small {
+  color: #91bfff;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cx-tab-text small b {
+  color: #7f828a;
+  margin-right: 8px;
+}
+
+.cx-tab-text > span {
+  font-size: 13.5px;
+  font-weight: 650;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cx-controls {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  grid-area: controls;
+}
+
+.cx-count {
+  color: #7f828a;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+.cx-count b {
+  color: #fff;
+  font-weight: 700;
+}
+
+.cx-arrow {
+  align-items: center;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  color: #e6ecf5;
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  height: 42px;
+  justify-content: center;
+  padding: 0;
+  transition: background-color 0.25s var(--ease), border-color 0.25s var(--ease), color 0.25s var(--ease),
+    opacity 0.25s var(--ease), box-shadow 0.25s var(--ease), transform 0.25s var(--ease);
+  width: 42px;
+}
+
+.cx-arrow svg {
+  height: 18px;
+  width: 18px;
+}
+
+.cx-prev svg {
+  transform: scaleX(-1);
+}
+
+.cx-arrow:hover:not([aria-disabled="true"]) {
+  background: var(--grad);
+  border-color: transparent;
+  box-shadow: 0 10px 28px rgba(214, 96, 200, 0.3);
+  color: #fff;
+}
+
+.cx-arrow:active:not([aria-disabled="true"]) {
+  transform: scale(0.94);
+}
+
+.cx-arrow[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.cx-progress {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  grid-area: progress;
+  height: 2px;
+  overflow: hidden;
+}
+
+.cx-progress i {
+  background: var(--grad-3);
+  border-radius: 2px;
+  display: block;
+  height: 100%;
+  transform: translateX(calc(var(--i, 0) * 100%));
+  transition: transform var(--cx-time, 0.55s) var(--ease);
+  width: calc(100% / var(--n, 1));
+}
+
+.cx-viewport {
+  margin-top: 22px;
+  position: relative;
+}
+
+.js .cx-viewport {
+  box-sizing: content-box;
+  margin: 14px -8px -28px;
+  overflow: hidden;
+  overflow: clip;
+  padding: 8px 8px 28px;
+  touch-action: pan-y pinch-zoom;
+}
+
+.cx-viewport .world-scroll:not(.x-scroll) {
+  touch-action: pan-y pinch-zoom;
+}
+
+.cx.moving .cx-viewport {
+  transition: height var(--cx-time, 0.55s) var(--ease);
+}
+
+.js .cx-track {
+  align-items: flex-start;
+  display: flex;
+  gap: 72px;
+  position: relative;
+  transition: transform var(--cx-time, 0.55s) var(--ease);
+}
+
+.js .cx-track.instant,
+.js .cx-track.dragging {
+  transition: none;
+}
+
+.cx-slide {
+  min-width: 0;
+}
+
+.js .cx-slide {
+  flex: 0 0 100%;
+  transition: opacity var(--cx-time, 0.55s) var(--ease), transform var(--cx-time, 0.55s) var(--ease);
+}
+
+.js .cx-slide[aria-hidden="true"] {
+  opacity: 0.25;
+  transform: scale(0.96);
+}
+
+.world-deck .cx-bar {
+  margin: 0 24px;
+}
+
+.js .world-deck .cx-viewport {
+  margin-top: 8px;
+}
+
+.comparison-board > .cx-bar {
+  border-radius: 0 0 16px 16px;
+  margin: 0 -14px;
+  padding: 12px 14px;
+  position: sticky;
+  top: var(--nav-h);
+  transition: background-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+  z-index: 6;
+}
+
+.comparison-board > .cx-bar.stuck {
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  background-color: rgba(4, 5, 8, 0.84);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+.js .comparison-board .cx-viewport {
+  margin-top: 6px;
+}
+
+@media (max-width: 1279px) {
+  .comparison-stage {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1080px) {
+  .revisit-card {
+    grid-template-areas:
+      "kicker"
+      "title"
+      "sub"
+      "strip"
+      "changes";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .cx-tab-text > span {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+  }
+
+  .masthead-content {
+    padding: 88px 0 56px;
+  }
+
+  .resource-links a {
+    min-width: 0;
+    padding: 0 16px;
+  }
+
+  .vt-seg small {
+    display: none;
+  }
+
+  .vt-track {
+    height: 52px;
+  }
+}
+
+@media (max-width: 720px) {
+  .container {
+    padding: 0 14px 48px;
+  }
+
+  .premiere-stage {
+    border-radius: 16px;
+    padding: 10px;
+  }
+
+  .hero-card {
+    padding: 14px;
+  }
+
+  .comparison-stage {
+    grid-template-areas:
+      "summary"
+      "ours"
+      "others";
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .comparison-stage > .method-card.ours {
+    position: relative;
+    top: auto;
+  }
+
+  .cx-bar {
+    column-gap: 10px;
+  }
+
+  .cx-count {
+    display: none;
+  }
+
+  .cx-arrow {
+    height: 38px;
+    width: 38px;
+  }
+
+  .cx-tab {
+    min-height: 46px;
+    padding-right: 12px;
+  }
+
+  .cx-thumb ~ .cx-tab-text {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .cx-tab:has(.cx-thumb) {
+    padding: 6px;
+  }
+
+  .cx-thumb {
+    width: 56px;
+  }
+
+  .world-deck .cx-bar {
+    margin: 0 14px;
+  }
+
+  .revisit-slide {
+    padding: 10px 14px 6px;
+  }
+
+  .revisit-card {
+    padding: 18px 16px 20px;
+  }
+
+  .site-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-side {
+    align-items: flex-start;
+  }
+
+  .rc-strip {
+    gap: 6px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rc-shot {
+    align-items: center;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 0.48fr) minmax(0, 0.52fr);
+  }
+
+  .rc-shot .cap {
+    margin-top: 0;
+  }
+
+  .rc-arrow {
+    justify-self: start;
+    margin: 0 0 0 calc(24% - 9px);
+    transform: rotate(90deg);
+  }
+
+  .hero-frame .play-overlay .disc {
+    height: 60px;
+    width: 60px;
+  }
+
+  .hero-frame .play-overlay svg {
+    height: 22px;
+    margin-left: 4px;
+    width: 22px;
+  }
+
+  .paper-section,
+  .scene-hero {
+    padding-top: 88px;
+  }
+
+  .paper-figure {
+    border-radius: 12px;
+    padding: 8px 8px 2px;
+  }
+
+  .figure-plate {
+    border-radius: 7px;
+  }
+
+  .table-card {
+    padding: 16px 14px 8px;
+  }
+
+  .paper-table {
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .aurora {
+    animation: none;
+  }
+
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .js .cx-track,
+  .js .cx-slide,
+  .cx-progress i,
+  .cx.moving .cx-viewport {
+    transition: none;
+  }
+
+  .js .cx-slide[aria-hidden="true"] {
+    transform: none;
+  }
+}
+</style>
+    <!-- 交互台的样式和脚本带 ?v=，早先按一天缓存发布过的旧文件留在浏览器里也不会再被用到 -->
+    <link rel="stylesheet" href="assets/console/console.css?v=4">
+    <script type="importmap">{"imports": {"three": "./assets/vendor/three.module.js"}}</script>
+  </head>
+  <body>
+    <div class="aurora" aria-hidden="true"></div>
+    <header id="siteNav" class="site-nav">
+      <a class="site-brand wordmark small" href="#home">ATAS</a>
+      <nav class="site-nav-links" aria-label="Pages">
+        <a href="#home" data-view="home">Home</a>
+        <a href="#technical-details" data-view="technical-details">Technical Details</a>
+        <a href="#console" data-view="console">Interactive Console</a>
+      </nav>
+      <div class="site-nav-side">
+        <a href="https://openreview.net/pdf?id=vMypxbZHbc" target="_blank" rel="noopener noreferrer">Paper</a>
+        <span aria-hidden="true">/</span>
+        <a href="https://github.com/ziplab/ATAS" target="_blank" rel="noopener noreferrer">Code</a>
+      </div>
+    </header>
+    <main id="home" class="page-view">
+    <header class="masthead" id="top">
+      <div class="masthead-media" aria-hidden="true">
+        <video class="masthead-video active" muted playsinline preload="auto" poster="assets/hero/02_saturday_laundry.jpg"></video>
+        <video class="masthead-video" muted playsinline preload="auto"></video>
+        <div class="masthead-shade"></div>
+      </div>
+      <div class="masthead-content">
+        <h1 class="reveal">
+          <span class="wordmark"><span class="nowrap">Any Time,</span> <span class="nowrap">Any Space</span></span>
+          <span class="h1-soft">A <span class="nowrap">World-State-Centric</span> Framework for Agentic Video Generation</span>
+        </h1>
+        <div class="authors reveal" aria-label="Authors">
+          <a href="https://lhmd.top/" target="_blank" rel="noopener noreferrer">Weijie Wang</a>
+          <a href="https://zhmin.top/" target="_blank" rel="noopener noreferrer">Haomin Zhang</a>
+          <a href="https://github.com/memoryoffish" target="_blank" rel="noopener noreferrer">Ye Li</a>
+          <a href="https://github.com/AkideLiu" target="_blank" rel="noopener noreferrer">Akide Liu</a>
+          <a href="https://zhao-haoyu.github.io/" target="_blank" rel="noopener noreferrer">Haoyu Zhao</a>
+          <a href="https://scholar.google.com/citations?user=CTEQwwwAAAAJ" target="_blank" rel="noopener noreferrer">Yefei He</a>
+          <a href="https://donydchen.github.io/" target="_blank" rel="noopener noreferrer">Donny Y. Chen</a>
+          <a href="https://github.com/Chenfeng1271" target="_blank" rel="noopener noreferrer">Feng Chen</a>
+          <a href="https://bohanzhuang.github.io/" target="_blank" rel="noopener noreferrer">Bohan Zhuang</a>
+        </div>
+        <div class="resource-links reveal" aria-label="Paper resources">
+          <a class="primary" href="https://openreview.net/pdf?id=vMypxbZHbc" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>Paper
+          </a>
+          <a href="https://github.com/ziplab/ATAS" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-4 4 4 4"/><path d="m16 8 4 4-4 4"/><path d="m13.5 5-3 14"/></svg>Code
+          </a>
+          <a href="#hero">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.7v14.6a1 1 0 0 0 1.52.85l11.8-7.3a1 1 0 0 0 0-1.7L8.52 3.85A1 1 0 0 0 7 4.7z"/></svg>Video
+          </a>
+          <a href="#technical-details">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h10"/></svg>Technical Details
+          </a>
+        </div>
+      </div>
+    </header>
+    <div class="container">
+      <section id="hero" class="scene-hero" aria-labelledby="hero-title">
+        <div class="premiere-heading reveal">
+          <h2 id="hero-title">Saturday Laundry in the Flat</h2>
+        </div>
+
+        <div class="premiere-stage reveal">
+          <article class="hero-card">
+            <div id="heroFrame" class="hero-frame">
+              <video id="heroVideo" playsinline muted preload="metadata"></video>
+            </div>
+            <div id="visitTimeline" class="visit-timeline"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="world-state" class="plan-preview reveal" aria-labelledby="world-title">
+        <div class="preview-copy">
+          <h2 id="world-title" class="section-title">World-State Timeline</h2>
+        </div>
+        <div id="worldDeck" class="cx world-deck" role="region" aria-roledescription="carousel" aria-label="World-state timeline and room revisits">
+          <div class="cx-bar">
+            <div class="cx-tabs" role="tablist" aria-label="World-state slides"></div>
+            <div class="cx-controls">
+              <span class="cx-count" aria-hidden="true"></span>
+              <button type="button" class="cx-arrow cx-prev" aria-label="Previous slide" aria-controls="worldSlides"></button>
+              <button type="button" class="cx-arrow cx-next" aria-label="Next slide" aria-controls="worldSlides"></button>
+            </div>
+            <div class="cx-progress" aria-hidden="true"><i></i></div>
+          </div>
+          <div class="cx-viewport">
+            <div id="worldSlides" class="cx-track">
+              <div class="cx-slide">
+                <div class="world-scroll">
+                  <div id="worldTrack" class="world-inner"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="cx-status sr-only" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="comparison" class="comparison-section" aria-labelledby="comparison-title">
+        <div class="section-head reveal">
+          <h2 id="comparison-title" class="section-title">Comparison with Other Frameworks</h2>
+        </div>
+        <div id="comparisonDeck" class="comparison-board cx reveal" role="region" aria-roledescription="carousel" aria-label="Comparison examples">
+          <div class="cx-sentinel" aria-hidden="true"></div>
+          <div class="cx-bar">
+            <div id="comparisonTabs" class="cx-tabs" role="tablist" aria-label="Comparison examples"></div>
+            <div class="cx-controls">
+              <span class="cx-count" aria-hidden="true"></span>
+              <button type="button" class="cx-arrow cx-prev" aria-label="Previous example" aria-controls="comparisonSlides"></button>
+              <button type="button" class="cx-arrow cx-next" aria-label="Next example" aria-controls="comparisonSlides"></button>
+            </div>
+            <div class="cx-progress" aria-hidden="true"><i></i></div>
+          </div>
+          <div class="cx-viewport">
+            <div id="comparisonSlides" class="cx-track"></div>
+          </div>
+          <p class="cx-status sr-only" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="citation" class="paper-section" aria-labelledby="citation-title">
+        <div class="section-head reveal">
+          <h2 id="citation-title" class="section-title">BibTeX</h2>
+        </div>
+        <div class="citation-block reveal">
+          <div class="citation-bar">
+            <button type="button" class="citation-copy" aria-label="Copy BibTeX">Copy</button>
+          </div>
+          <pre id="citationText" aria-label="BibTeX citation">@article{liu2026reca,
+  title        = {ReCA: Multi-Shot Long Video Extrapolation via Recursive Context Allocation},
+  author       = {Liu, Akide and Xing, Jinbo and Mao, Chaojie and Li, Ye and
+                  Zhang, Zeyu and He, Yefei and Wang, Weijie and Wang, Zihan and
+                  Liu, Yu and Haffari, Gholamreza and Zhuang, Bohan},
+  journal      = {arXiv preprint arXiv:2605.26525},
+  year         = {2026},
+  eprint       = {2605.26525},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CV},
+  url          = {https://arxiv.org/abs/2605.26525}
+}</pre>
+        </div>
+      </section>
+    </div>
+    </main>
+
+    <main id="technical-details" class="page-view" hidden>
+    <div class="container tech-main">
+      <section class="tech-hero-panel reveal" aria-labelledby="tech-title">
+        <h1 id="tech-title">ATAS: Any Time, Any Space: A World-State-Centric Framework for Agentic Video Generation</h1>
+        <div class="tech-authors" aria-label="Authors">
+          <a href="https://lhmd.top/" target="_blank" rel="noopener noreferrer">Weijie Wang</a>
+          <a href="https://zhmin.top/" target="_blank" rel="noopener noreferrer">Haomin Zhang</a>
+          <a href="https://github.com/memoryoffish" target="_blank" rel="noopener noreferrer">Ye Li</a>
+          <a href="https://github.com/AkideLiu" target="_blank" rel="noopener noreferrer">Akide Liu</a>
+          <a href="https://zhao-haoyu.github.io/" target="_blank" rel="noopener noreferrer">Haoyu Zhao</a>
+          <a href="https://scholar.google.com/citations?user=CTEQwwwAAAAJ" target="_blank" rel="noopener noreferrer">Yefei He</a>
+          <a href="https://donydchen.github.io/" target="_blank" rel="noopener noreferrer">Donny Y. Chen</a>
+          <a href="https://github.com/Chenfeng1271" target="_blank" rel="noopener noreferrer">Feng Chen</a>
+          <a href="https://bohanzhuang.github.io/" target="_blank" rel="noopener noreferrer">Bohan Zhuang</a>
+        </div>
+        <div class="tech-stat-grid">
+          <article class="tech-stat-card">
+            <p class="stat-key">Multi-shot benchmarks</p>
+            <p class="stat-value">0.734</p>
+            <p class="stat-desc">Average on Wan&nbsp;3.0; strongest baseline 0.648</p>
+          </article>
+          <article class="tech-stat-card">
+            <p class="stat-key">Backbones</p>
+            <p class="stat-value">4 / 4</p>
+            <p class="stat-desc">Best average on Wan&nbsp;3.0, MiniMax-H3, Wan&nbsp;2.7, and HappyHorse&nbsp;1.0</p>
+          </article>
+          <article class="tech-stat-card">
+            <p class="stat-key">Spatial revisit</p>
+            <p class="stat-value">15.968</p>
+            <p class="stat-desc">PSNR<sub>C</sub>, above every agent and both 3D-guided view-synthesis methods</p>
+          </article>
+          <article class="tech-stat-card">
+            <p class="stat-key">Event recapture</p>
+            <p class="stat-value">0.650</p>
+            <p class="stat-desc">Viewpoint score; ReCA 0.500</p>
+          </article>
+          <article class="tech-stat-card">
+            <p class="stat-key">Memory ablation</p>
+            <p class="stat-value">0.452 → 0.739</p>
+            <p class="stat-desc">Recapture score from no memory to the full state</p>
+          </article>
+          <article class="tech-stat-card">
+            <p class="stat-key">Human rating</p>
+            <p class="stat-value">4.40 / 5</p>
+            <p class="stat-desc">Script faithfulness; ATAS is highest on all six criteria</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="abstract" class="tech-section" aria-labelledby="abstract-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">01</span>
+          <h2 id="abstract-title">Abstract</h2>
+        </div>
+        <article class="tech-panel reveal">
+          <p class="abstract-text">Long-form agentic video generation requires turning a high-level screenplay into short video shots while preserving the spatial and temporal relationships established by earlier shots. This becomes particularly challenging when a later shot revisits a previously depicted location or portrays an earlier event from a different viewpoint. Existing systems commonly pass prompts, reference images, or generated frames between shots, but these signals do not provide a persistent spatial frame or an explicit index for dynamic events. We introduce <strong>Any Time, Any Space (ATAS)</strong>, which generates shots by projecting a persistent world state into requested views and selectively updates that state with validated observations. This state comprises two complementary memories: a scene memory that accumulates static geometry in a shared coordinate frame, and an event memory that preserves dynamic observations indexed by scene, event identity, and time. A world-state compiler decomposes the screenplay into short-shot requests with explicit spatial and temporal references, enabling the agent to retrieve the relevant scene and event evidence to guide generation. To prevent inconsistencies in generated clips from propagating to subsequent shots, each clip is reconstructed and registered, and its observations enter memory following validation. This separates screenplay decomposition, shot rendering, and state updates, reducing the propagation of unreliable observations. We evaluate ATAS on standard multi-shot benchmarks and controlled protocols for spatial revisit and historical event recapture, with ablations examining scene memory, event memory, and state update checks.</p>
+        </article>
+      </section>
+
+      <section id="method" class="tech-section" aria-labelledby="method-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">02</span>
+          <h2 id="method-title">Pipeline Overview</h2>
+        </div>
+        <p class="tech-lede reveal">ATAS turns a high-level screenplay into short video shots while keeping the spatial and temporal evidence that later shots need. The central object is a persistent world state, which is queried before each shot and updated by observations that pass validation. Figure 2 shows the workflow in three parts: world-state compilation, video synthesis and validation, and a two-stage memory that holds static point clouds for different scenes and dynamic point clouds for specific events.</p>
+        <figure class="paper-figure wide reveal">
+          <div class="figure-plate">
+            <img src="assets/paper/fig2_workflow.webp" width="3200" height="735" loading="lazy" decoding="async" alt="ATAS workflow: world-state compilation parses the prompt into multi-shot requests and a bounded shot request with description, scene, anchor, camera, time, and event; video synthesis and validation conditions the video generator on the shot prompt and a context-dependent prompt, with retry and state update; two-stage memory keeps static point clouds for each scene and dynamic point clouds for specific events.">
+          </div>
+          <figcaption><span class="paper-tag">Fig. 2</span><strong>Workflow of ATAS.</strong> A high-level prompt is parsed into multi-shot requests and bounded shot requests.</figcaption>
+        </figure>
+      </section>
+
+      <section id="components" class="tech-section" aria-labelledby="components-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">03</span>
+          <h2 id="components-title">Core Components</h2>
+        </div>
+        <p class="tech-lede reveal">Scene and event evidence are kept apart because they have different persistence requirements: static geometry is registered once to a scene coordinate frame and can be rendered at a new camera, whereas dynamic evidence must remain bound to an event and a time interval. Figures A and B trace the compiler and both memories, and Table E reports how the memory grows.</p>
+        <div class="tech-card-grid">
+          <article class="tech-panel tech-card reveal">
+            <h3>World-state compiler</h3>
+            <p>Recursively splits the screenplay until each request fits the short-video generation budget, and waits for each validated observation before deciding which state a subsequent request may use.</p>
+          </article>
+          <article class="tech-panel tech-card reveal">
+            <h3>Scene memory</h3>
+            <p>Accepted static geometry registered in the scene coordinate frame, with dynamic regions excluded. A request recovers a previously observed space by rendering it at the requested camera.</p>
+          </article>
+          <article class="tech-panel tech-card reveal">
+            <h3>Event memory</h3>
+            <p>Time-local dynamic evidence, with registered frame-level RGB-D, masks, and dynamic point clouds, indexed by scene, event identity, source observation, and source interval.</p>
+          </article>
+          <article class="tech-panel tech-card reveal">
+            <h3>Validation and state update</h3>
+            <p>Film delivery, registration, and admission to persistent state are separate decisions, so a clip can remain in the film without becoming evidence for later requests.</p>
+          </article>
+        </div>
+        <div class="tech-grid">
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_compiler.webp" width="2400" height="1440" loading="lazy" decoding="async" alt="Recursive screenplay compilation">
+            </div>
+            <figcaption><span class="paper-tag">Fig. A</span><strong>Recursive screenplay compilation.</strong> The compiler turns a high-level request into bounded shot requests and uses validated state updates to condition subsequent requests.</figcaption>
+          </figure>
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_memory_construction.webp" width="2400" height="969" loading="lazy" decoding="async" alt="Scene and event memory">
+            </div>
+            <figcaption><span class="paper-tag">Fig. B</span><strong>Scene and event memory.</strong> The figure follows one accepted shot-local observation as static evidence is written to scene memory and dynamic evidence is indexed in event memory, then shows how both references condition a later camera request.</figcaption>
+          </figure>
+          <div class="table-card full-row reveal" role="region" aria-label="Memory statistics" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. E</span><strong>Memory statistics.</strong> This analysis table reports memory growth and query cost at rollout checkpoints; it is not a sample manifest.</caption>
+              <thead>
+                <tr><th scope="col">Checkpoint</th><th scope="col">Scene size (×10<sup>6</sup>)</th><th scope="col">Event records</th><th scope="col">Storage (GB)</th><th scope="col">Query and update time (s)</th><th scope="col">Processed shots</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Initial state</th><td>33.54</td><td>1.0</td><td>0.95</td><td>93.0</td><td>1.2</td></tr>
+                <tr><th scope="row">After accepted update</th><td>40.92</td><td>2.1</td><td>1.38</td><td>97.8</td><td>2.8</td></tr>
+                <tr><th scope="row">End of rollout</th><td>49.60</td><td>4.8</td><td>2.44</td><td>103.5</td><td>6.9</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="setup" class="tech-section" aria-labelledby="setup-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">04</span>
+          <h2 id="setup-title">Experimental Setup</h2>
+        </div>
+        <p class="tech-lede reveal">The experiments test whether a persistent scene and event state improves multi-shot continuity, and separate this effect from memory contents, agent components, delivery cost, and human perception. Tables A–D break each standard benchmark into its individual metrics for ATAS on the four backbones.</p>
+        <div class="tech-card-grid">
+          <article class="tech-panel tech-card reveal">
+            <h3>Standard benchmarks</h3>
+            <p>Official inputs and evaluators of VBench, StoryMem, ViStory-Self, and ViStory-Cross on MiniMax-H3, Wan&nbsp;2.7, HappyHorse&nbsp;1.0, and Wan&nbsp;3.0, against I2V Extension, VGoT, Mora, MovieAgent, and ReCA.</p>
+          </article>
+          <article class="tech-panel tech-card reveal">
+            <h3>Spatial revisit</h3>
+            <p>The return view after intervening requests is compared with a target image using PSNR<sub>C</sub>, SSIM<sub>C</sub>, and LPIPS<sub>C</sub> under a common-visibility mask.</p>
+          </article>
+          <article class="tech-panel tech-card reveal">
+            <h3>Event recapture</h3>
+            <p>Source-grounded: one fixed VLM judge scores event identity, action and state, temporal order, character and object consistency, and viewpoint realization, with no synchronized target video.</p>
+          </article>
+          <article class="tech-panel tech-card reveal">
+            <h3>Controlled comparisons</h3>
+            <p>State contents and agent components are varied separately under fixed generation conditions, followed by sensitivity tests on capacity, update frequency, freshness, and the state update check.</p>
+          </article>
+        </div>
+        <div class="tech-grid">
+          <div class="table-card full-row reveal" role="region" aria-label="VBench dimension breakdown" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. A</span><strong>VBench dimension breakdown.</strong> Each row is one reported VBench dimension, and each method/backbone column uses the official VBench evaluator and prompt suite.</caption>
+              <thead>
+                <tr><th scope="col">Dimension</th><th scope="col">Wan&nbsp;2.7 ATAS</th><th scope="col">Wan&nbsp;3.0 ATAS</th><th scope="col">MiniMax-H3 ATAS</th><th scope="col">HappyHorse ATAS</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Aesthetic quality</th><td>0.6387</td><td>0.6731</td><td>0.6945</td><td>0.6792</td></tr>
+                <tr><th scope="row">Subject consistency</th><td>0.9481</td><td>0.9643</td><td>0.9576</td><td>0.9418</td></tr>
+                <tr><th scope="row">Background consistency</th><td>0.9554</td><td>0.9717</td><td>0.9680</td><td>0.9522</td></tr>
+                <tr><th scope="row">Temporal flickering</th><td>0.9932</td><td>0.9863</td><td>0.9847</td><td>0.9884</td></tr>
+                <tr><th scope="row">Motion smoothness</th><td>0.9888</td><td>0.9766</td><td>0.9714</td><td>0.9795</td></tr>
+                <tr><th scope="row">Dynamic degree</th><td>0.5488</td><td>0.6882</td><td>0.5842</td><td>0.6314</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-card full-row reveal" role="region" aria-label="StoryMem metric breakdown" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. B</span><strong>StoryMem metric breakdown.</strong> StoryMem is the ST-Bench protocol used in the main comparison.</caption>
+              <thead>
+                <tr><th scope="col">Metric</th><th scope="col">Wan&nbsp;2.7 ATAS</th><th scope="col">Wan&nbsp;3.0 ATAS</th><th scope="col">MiniMax-H3 ATAS</th><th scope="col">HappyHorse ATAS</th><th scope="col">ReCA reference</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Aesthetic</th><td>0.6387</td><td>0.6731</td><td>0.6945</td><td>0.6792</td><td>0.6517</td></tr>
+                <tr><th scope="row">PF-G</th><td>0.2174</td><td>0.2415</td><td>0.2351</td><td>0.2289</td><td>0.2216</td></tr>
+                <tr><th scope="row">PF-S</th><td>0.2154</td><td>0.2362</td><td>0.2308</td><td>0.2243</td><td>0.2192</td></tr>
+                <tr><th scope="row">C-All</th><td>0.5977</td><td>0.6844</td><td>0.6529</td><td>0.6615</td><td>0.5751</td></tr>
+                <tr><th scope="row">C-Top10</th><td>0.6253</td><td>0.7187</td><td>0.6908</td><td>0.6684</td><td>0.6015</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-card full-row reveal" role="region" aria-label="ViStory-Self metric breakdown" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. C</span><strong>ViStory-Self metric breakdown.</strong> Each row is an official ViStory-Self submetric; the final row reports its official aggregate when available.</caption>
+              <thead>
+                <tr><th scope="col">Metric</th><th scope="col">Wan&nbsp;2.7 ATAS</th><th scope="col">Wan&nbsp;3.0 ATAS</th><th scope="col">MiniMax-H3 ATAS</th><th scope="col">HappyHorse ATAS</th><th scope="col">ReCA reference</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Identity consistency</th><td>0.5494</td><td>0.6617</td><td>0.6421</td><td>0.5974</td><td>0.5608</td></tr>
+                <tr><th scope="row">Appearance consistency</th><td>0.6836</td><td>0.8139</td><td>0.7476</td><td>0.7772</td><td>0.7034</td></tr>
+                <tr><th scope="row">Temporal self-consistency</th><td>0.7648</td><td>0.7908</td><td>0.7392</td><td>0.7425</td><td>0.7186</td></tr>
+                <tr><th scope="row">Aggregate</th><td>0.6659</td><td>0.7555</td><td>0.7096</td><td>0.7057</td><td>0.6609</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-card full-row reveal" role="region" aria-label="ViStory-Cross metric breakdown" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. D</span><strong>ViStory-Cross metric breakdown.</strong> Each row is an official ViStory-Cross submetric; the final row reports its official aggregate when available.</caption>
+              <thead>
+                <tr><th scope="col">Metric</th><th scope="col">Wan&nbsp;2.7 ATAS</th><th scope="col">Wan&nbsp;3.0 ATAS</th><th scope="col">MiniMax-H3 ATAS</th><th scope="col">HappyHorse ATAS</th><th scope="col">ReCA reference</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Cross-shot identity</th><td>0.5073</td><td>0.5992</td><td>0.5736</td><td>0.5428</td><td>0.4934</td></tr>
+                <tr><th scope="row">Cross-shot appearance</th><td>0.4871</td><td>0.5806</td><td>0.5392</td><td>0.5618</td><td>0.5013</td></tr>
+                <tr><th scope="row">Cross-shot scene consistency</th><td>0.4621</td><td>0.5729</td><td>0.5285</td><td>0.5138</td><td>0.4484</td></tr>
+                <tr><th scope="row">Aggregate</th><td>0.4855</td><td>0.5842</td><td>0.5471</td><td>0.5395</td><td>0.4810</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="results" class="tech-section" aria-labelledby="results-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">05</span>
+          <h2 id="results-title">Quantitative Results</h2>
+        </div>
+        <p class="tech-lede reveal">Table 1 compares ATAS with I2V Extension, VGoT, Mora, MovieAgent, and ReCA on four standard benchmarks and four rendering backbones; within a block, every method shares the generator, prompt package, duration budget, and evaluation protocol. VBench reflects local rendering quality, while StoryMem, ViStory-Self, and ViStory-Cross measure consistency across shots. ATAS has the best average on every backbone, and its clearest advantage is on the cross-shot measures. Figure 3 shows how accepted observations extend the scene and event state across intervening shots.</p>
+        <div class="table-card reveal" role="region" aria-label="Agent-level quantitative evaluation on standard benchmarks" tabindex="0">
+          <table class="paper-table main-table">
+            <caption><span class="paper-tag">Tab. 1</span><strong>Agent-level quantitative evaluation on standard benchmarks.</strong> Models are grouped by source type and rendering backbone; methods within a block share the generator, prompt package, duration budget, and evaluation protocol. Bold and underlined entries mark the best and second-best values within each backbone block.</caption>
+            <thead>
+              <tr><th scope="col">Model</th><th scope="col">Method</th><th scope="col">VBench</th><th scope="col">StoryMem</th><th scope="col">ViStory-Self</th><th scope="col">ViStory-Cross</th><th scope="col">Avg.</th></tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th scope="rowgroup" colspan="7">Open-Source Models</th></tr>
+            </tbody>
+            <tbody>
+              <tr><th scope="rowgroup" rowspan="6" class="model-cell">MiniMax-H3</th><th scope="row">I2V Extension</th><td>0.828<small>±0.013</small></td><td>0.572<small>±0.020</small></td><td>0.601<small>±0.028</small></td><td>0.418<small>±0.027</small></td><td>0.605</td></tr>
+              <tr><th scope="row">VGoT</th><td>0.834<small>±0.014</small></td><td>0.612<small>±0.017</small></td><td>0.638<small>±0.023</small></td><td>0.468<small>±0.030</small></td><td>0.638</td></tr>
+              <tr><th scope="row">Mora</th><td>0.836<small>±0.012</small></td><td>0.598<small>±0.019</small></td><td>0.628<small>±0.026</small></td><td>0.452<small>±0.024</small></td><td>0.628</td></tr>
+              <tr><th scope="row">MovieAgent</th><td class="u">0.852<small>±0.012</small></td><td>0.608<small>±0.016</small></td><td>0.642<small>±0.025</small></td><td>0.476<small>±0.023</small></td><td>0.644</td></tr>
+              <tr><th scope="row">ReCA</th><td>0.844<small>±0.011</small></td><td class="u">0.628<small>±0.018</small></td><td class="u">0.658<small>±0.021</small></td><td class="u">0.508<small>±0.022</small></td><td class="u">0.659</td></tr>
+              <tr class="ours"><th scope="row">ATAS</th><td class="b">0.860<small>±0.010</small></td><td class="b">0.691<small>±0.014</small></td><td class="b">0.710<small>±0.020</small></td><td class="b">0.547<small>±0.021</small></td><td class="b">0.702</td></tr>
+            </tbody>
+            <tbody>
+              <tr class="group"><th scope="rowgroup" colspan="7">Proprietary Models</th></tr>
+            </tbody>
+            <tbody>
+              <tr><th scope="rowgroup" rowspan="6" class="model-cell">Wan&nbsp;2.7</th><th scope="row">I2V Extension</th><td>0.778<small>±0.014</small></td><td>0.486<small>±0.022</small></td><td>0.512<small>±0.029</small></td><td>0.348<small>±0.031</small></td><td>0.531</td></tr>
+              <tr><th scope="row">VGoT</th><td>0.786<small>±0.011</small></td><td>0.536<small>±0.019</small></td><td>0.564<small>±0.026</small></td><td>0.412<small>±0.028</small></td><td>0.575</td></tr>
+              <tr><th scope="row">Mora</th><td>0.791<small>±0.015</small></td><td>0.528<small>±0.017</small></td><td>0.558<small>±0.031</small></td><td>0.388<small>±0.033</small></td><td>0.566</td></tr>
+              <tr><th scope="row">MovieAgent</th><td>0.808<small>±0.013</small></td><td>0.542<small>±0.021</small></td><td>0.572<small>±0.024</small></td><td>0.402<small>±0.026</small></td><td>0.581</td></tr>
+              <tr><th scope="row">ReCA</th><td class="b">0.854<small>±0.009</small></td><td class="u">0.568<small>±0.018</small></td><td class="u">0.598<small>±0.022</small></td><td class="u">0.428<small>±0.029</small></td><td class="u">0.612</td></tr>
+              <tr class="ours"><th scope="row">ATAS</th><td class="u">0.846<small>±0.012</small></td><td class="b">0.625<small>±0.016</small></td><td class="b">0.666<small>±0.021</small></td><td class="b">0.486<small>±0.032</small></td><td class="b">0.656</td></tr>
+            </tbody>
+            <tbody>
+              <tr><th scope="rowgroup" rowspan="6" class="model-cell">HappyHorse&nbsp;1.0</th><th scope="row">I2V Extension</th><td>0.836<small>±0.012</small></td><td>0.558<small>±0.023</small></td><td>0.592<small>±0.029</small></td><td>0.408<small>±0.031</small></td><td>0.599</td></tr>
+              <tr><th scope="row">VGoT</th><td>0.822<small>±0.014</small></td><td>0.588<small>±0.018</small></td><td>0.628<small>±0.025</small></td><td>0.458<small>±0.027</small></td><td>0.624</td></tr>
+              <tr><th scope="row">Mora</th><td>0.824<small>±0.011</small></td><td>0.574<small>±0.020</small></td><td>0.618<small>±0.027</small></td><td>0.442<small>±0.026</small></td><td>0.614</td></tr>
+              <tr><th scope="row">MovieAgent</th><td class="u">0.856<small>±0.013</small></td><td>0.598<small>±0.016</small></td><td>0.648<small>±0.021</small></td><td>0.472<small>±0.024</small></td><td>0.643</td></tr>
+              <tr><th scope="row">ReCA</th><td>0.841<small>±0.010</small></td><td class="u">0.621<small>±0.019</small></td><td class="u">0.668<small>±0.024</small></td><td class="u">0.496<small>±0.025</small></td><td class="u">0.656</td></tr>
+              <tr class="ours"><th scope="row">ATAS</th><td class="b">0.862<small>±0.009</small></td><td class="b">0.668<small>±0.015</small></td><td class="b">0.706<small>±0.019</small></td><td class="b">0.540<small>±0.030</small></td><td class="b">0.694</td></tr>
+            </tbody>
+            <tbody>
+              <tr><th scope="rowgroup" rowspan="6" class="model-cell">Wan&nbsp;3.0</th><th scope="row">I2V Extension</th><td>0.836<small>±0.013</small></td><td>0.548<small>±0.021</small></td><td>0.582<small>±0.027</small></td><td>0.401<small>±0.030</small></td><td>0.592</td></tr>
+              <tr><th scope="row">VGoT</th><td>0.834<small>±0.010</small></td><td>0.571<small>±0.019</small></td><td>0.622<small>±0.024</small></td><td>0.461<small>±0.026</small></td><td>0.622</td></tr>
+              <tr><th scope="row">Mora</th><td>0.838<small>±0.012</small></td><td>0.562<small>±0.023</small></td><td>0.614<small>±0.022</small></td><td>0.438<small>±0.031</small></td><td>0.613</td></tr>
+              <tr><th scope="row">MovieAgent</th><td class="u">0.858<small>±0.011</small></td><td>0.578<small>±0.018</small></td><td>0.628<small>±0.025</small></td><td>0.452<small>±0.024</small></td><td>0.629</td></tr>
+              <tr><th scope="row">ReCA</th><td>0.848<small>±0.009</small></td><td class="u">0.602<small>±0.017</small></td><td class="u">0.661<small>±0.020</small></td><td class="u">0.481<small>±0.027</small></td><td class="u">0.648</td></tr>
+              <tr class="ours"><th scope="row">ATAS</th><td class="b">0.877<small>±0.011</small></td><td class="b">0.719<small>±0.015</small></td><td class="b">0.756<small>±0.019</small></td><td class="b">0.584<small>±0.028</small></td><td class="b">0.734</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="paper-figure reveal">
+          <div class="figure-plate">
+            <img src="assets/paper/fig3_rollout.webp" width="2400" height="1161" loading="lazy" decoding="async" alt="Qualitative world-state rollout: film frames and world views for shots 1, 3, 5, and 9 of Winter Fire in the Cabin and shots 1, 2, 4, and 7 of Saturday Laundry.">
+          </div>
+          <figcaption><span class="paper-tag">Fig. 3</span><strong>Qualitative world-state rollout.</strong> Film frames and registered world views are shown for two story sequences.</figcaption>
+        </figure>
+        <div class="finding-grid">
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Multi-shot benchmarks</p>
+            <h3>0.734 average on Wan&nbsp;3.0</h3>
+            <p>ATAS leads every aggregate on MiniMax-H3, HappyHorse&nbsp;1.0, and Wan&nbsp;3.0, with averages of 0.702, 0.694, and 0.734 against 0.659, 0.656, and 0.648 for ReCA.</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Wan&nbsp;2.7</p>
+            <h3>0.656 against 0.612 average</h3>
+            <p>ATAS gives up the local VBench lead to ReCA (0.846 against 0.854) but remains ahead on StoryMem and both ViStory consistency measures.</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Cross-shot consistency</p>
+            <h3>0.719 / 0.756 / 0.584</h3>
+            <p>StoryMem, ViStory-Self, and ViStory-Cross on Wan&nbsp;3.0, against 0.602, 0.661, and 0.481 for ReCA.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="revisit-recapture" class="tech-section" aria-labelledby="persistence-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">06</span>
+          <h2 id="persistence-title">Spatial Revisit and Event Recapture</h2>
+        </div>
+        <p class="tech-lede reveal">Two targeted protocols test the persistence queries directly. A spatial revisit returns to an earlier location after intervening requests and is scored against a target image at the prescribed return camera. A historical event recapture shows an earlier event again from a requested camera and is scored against the source-event evidence, since no synchronized target video is used. Figure 4 shows matched examples with one row per method.</p>
+        <figure class="paper-figure wide reveal">
+          <div class="figure-plate">
+            <img src="assets/paper/fig4_revisit_recapture.webp" width="3000" height="1114" loading="lazy" decoding="async" alt="Frame grid with one row per method (I2V Extension, VGoT, Mora, MovieAgent, ReCA, ATAS): start and return views in a tailor shop and a kitchen for spatial revisit, and source start, source end, and recaptured end in a museum storage room and a pottery studio for event recapture.">
+          </div>
+          <figcaption><span class="paper-tag">Fig. 4</span><strong>Spatial revisit and historical event recapture.</strong> The top row uses a target image for spatial comparison; the bottom row uses source-grounded event evidence under a requested camera.</figcaption>
+        </figure>
+        <div class="tech-grid">
+          <div class="table-card reveal" role="region" aria-label="Spatial revisit" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. 2</span><strong>Spatial revisit.</strong> Multi-shot agents and 3D-guided view-synthesis methods are compared on return views after intervening requests.</caption>
+              <thead>
+                <tr><th scope="col">Method</th><th scope="col">PSNR<sub>C</sub></th><th scope="col">SSIM<sub>C</sub></th><th scope="col">LPIPS<sub>C</sub></th></tr>
+              </thead>
+              <tbody>
+                <tr class="group"><th scope="rowgroup" colspan="4">Multi-shot Agents</th></tr>
+                <tr><th scope="row">I2V Extension</th><td>13.601</td><td>0.293</td><td>0.339</td></tr>
+                <tr><th scope="row">VGoT</th><td>14.444</td><td>0.313</td><td>0.300</td></tr>
+                <tr><th scope="row">Mora</th><td>13.796</td><td>0.318</td><td>0.288</td></tr>
+                <tr><th scope="row">MovieAgent</th><td>14.543</td><td>0.352</td><td>0.296</td></tr>
+                <tr><th scope="row">ReCA</th><td>13.870</td><td>0.268</td><td>0.306</td></tr>
+                <tr class="group"><th scope="rowgroup" colspan="4">3D-guided View Synthesis</th></tr>
+                <tr><th scope="row">FlexWorld</th><td>14.740</td><td>0.343</td><td>0.315</td></tr>
+                <tr><th scope="row">ViewCrafter</th><td>15.255</td><td>0.375</td><td>0.293</td></tr>
+              </tbody>
+              <tbody>
+                <tr class="ours"><th scope="row">ATAS</th><td class="b">15.968</td><td class="b">0.385</td><td class="b">0.284</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-card reveal" role="region" aria-label="Source-grounded dynamic event recapture" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. 4</span><strong>Source-grounded dynamic event recapture.</strong> Complete agents are compared on event identity, action and state, temporal order, character and object consistency, and viewpoint realization using source-event evidence and the requested camera.</caption>
+              <thead>
+                <tr><th scope="col">Method</th><th scope="col">Event<br>identity</th><th scope="col">Action<br>state</th><th scope="col">Temporal<br>order</th><th scope="col">Character<br>object</th><th scope="col">Viewpoint</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">I2V Extension</th><td>0.450</td><td>0.433</td><td>0.433</td><td>0.817</td><td>0.200</td></tr>
+                <tr><th scope="row">VGoT</th><td>0.517</td><td>0.533</td><td>0.400</td><td>0.850</td><td>0.400</td></tr>
+                <tr><th scope="row">Mora</th><td>0.286</td><td>0.339</td><td>0.357</td><td>0.768</td><td>0.250</td></tr>
+                <tr><th scope="row">MovieAgent</th><td>0.500</td><td>0.450</td><td>0.500</td><td>0.783</td><td>0.350</td></tr>
+                <tr><th scope="row">ReCA</th><td>0.733</td><td class="b">0.700</td><td>0.617</td><td class="b">0.917</td><td>0.500</td></tr>
+                <tr class="ours"><th scope="row">ATAS</th><td class="b">0.750</td><td>0.688</td><td class="b">0.688</td><td class="b">0.917</td><td class="b">0.650</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="finding-grid">
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Spatial revisit</p>
+            <h3>15.968 PSNR<sub>C</sub></h3>
+            <p>Best on all three measures, with 0.385 SSIM<sub>C</sub> and 0.284 LPIPS<sub>C</sub>; ViewCrafter reaches 15.255 and the best other agent 14.543.</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Event recapture</p>
+            <h3>0.750 / 0.688 / 0.650</h3>
+            <p>ATAS leads event identity, temporal order, and viewpoint realization; ReCA is slightly stronger on action and state (0.700 against 0.688).</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Character and object</p>
+            <h3>0.917, tied with ReCA</h3>
+            <p>Exact action-state reproduction remains the main residual difficulty of event recapture.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="ablation" class="tech-section" aria-labelledby="ablation-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">07</span>
+          <h2 id="ablation-title">Ablation and Analysis</h2>
+        </div>
+        <p class="tech-lede reveal">The controlled studies separate the contribution of memory contents from that of agent components, using the Wan&nbsp;3.0 backbone with the prompts, cameras, candidate budget, and retry policy fixed. Table 3 changes only what the memory contains, and Table 5 adds agent components cumulatively. Figure 5 measures what the state costs across the same six memory settings: persistent state trades a modest runtime and memory overhead for fewer retries. Figures C–E vary memory capacity, update frequency, memory freshness, and the strictness of the state update check, each next to the table that supplies its values.</p>
+        <div class="tech-grid">
+          <div class="table-card full-row reveal" role="region" aria-label="Memory-level ablation and analysis" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. 3</span><strong>Memory-level ablation and analysis.</strong> All rows use the same ATAS agent, Wan&nbsp;3.0 backbone, prompts, cameras, candidate budget, and retry policy.</caption>
+              <thead>
+                <tr><th scope="col">Configuration</th><th scope="col">C-Top10 ↑</th><th scope="col">LPIPS<sub>C</sub> ↓</th><th scope="col">Recap. Score ↑</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">ATAS w/o memory</th><td>0.536</td><td>0.341</td><td>0.452</td></tr>
+                <tr><th scope="row">ATAS w/ frame history</th><td>0.598</td><td>0.319</td><td>0.548</td></tr>
+                <tr><th scope="row">ATAS w/ static scene</th><td>0.617</td><td>0.289</td><td>0.583</td></tr>
+                <tr><th scope="row">ATAS w/ updated scene</th><td>0.658</td><td>0.286</td><td>0.585</td></tr>
+                <tr><th scope="row">ATAS w/ scene + event</th><td>0.703</td><td>0.285</td><td>0.728</td></tr>
+                <tr class="ours"><th scope="row">ATAS w/ full state</th><td class="b">0.719</td><td class="b">0.284</td><td class="b">0.739</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-card full-row reveal" role="region" aria-label="Agent-component ablation" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. 5</span><strong>Agent-component ablation.</strong> All rows use Wan&nbsp;3.0 and the same requests, cameras, candidate budget, and retry policy.</caption>
+              <thead>
+                <tr><th scope="col">Configuration</th><th scope="col">ViStory average ↑</th><th scope="col">C-Top10 ↑</th><th scope="col">LPIPS<sub>C</sub> ↓</th><th scope="col">Event Recapture Score ↑</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">ATAS w/ shot rendering</th><td>0.478</td><td>0.528</td><td>0.341</td><td>0.441</td></tr>
+                <tr><th scope="row">ATAS w/ scene and event resolution</th><td>0.612</td><td>0.568</td><td>0.334</td><td>0.508</td></tr>
+                <tr><th scope="row">ATAS w/ recursive compilation</th><td>0.638</td><td>0.684</td><td>0.288</td><td>0.711</td></tr>
+                <tr><th scope="row">ATAS w/ observation validation</th><td>0.651</td><td>0.702</td><td>0.286</td><td>0.726</td></tr>
+                <tr class="ours"><th scope="row">ATAS w/ state update check</th><td class="b">0.670</td><td class="b">0.719</td><td class="b">0.284</td><td class="b">0.739</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <figure class="paper-figure full-row reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/fig5_efficiency.webp" width="2400" height="1222" loading="lazy" decoding="async" alt="Efficiency charts over six memory settings, from no memory to the full state: runtime profile with wall-clock time and real-time factor, candidate lifecycle, and retry and delivery efficiency with retries per shot, retry-adjusted delivery time, throughput, and memory overhead.">
+            </div>
+            <figcaption><span class="paper-tag">Fig. 5</span><strong>Efficiency comparison across memory settings.</strong> Panels (a), (b), and (c) show runtime, candidate lifecycle, and retry and delivery measures across the six memory settings.</figcaption>
+          </figure>
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_memory_sensitivity.webp" width="2400" height="788" loading="lazy" decoding="async" alt="Memory capacity and update sensitivity">
+            </div>
+            <figcaption><span class="paper-tag">Fig. C</span><strong>Memory capacity and update sensitivity.</strong> The figure shows whether quality gains require additional state size or frequent updates.</figcaption>
+          </figure>
+          <div class="table-card reveal" role="region" aria-label="Memory capacity and update sensitivity" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. F</span><strong>Memory capacity and update sensitivity.</strong> The table supplies the values used by Fig.&nbsp;C.</caption>
+              <thead>
+                <tr><th scope="col">Configuration</th><th scope="col">Capacity (×10<sup>6</sup>)</th><th scope="col">Update interval</th><th scope="col">C-Top10</th><th scope="col">LPIPS<sub>C</sub></th><th scope="col">Event score</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Full update</th><td>49.60</td><td>1</td><td>0.719</td><td>0.284</td><td>0.739</td></tr>
+                <tr><th scope="row">Sparse update</th><td>49.60</td><td>3</td><td>0.685</td><td>0.286</td><td>0.732</td></tr>
+                <tr><th scope="row">Small capacity</th><td>12.00</td><td>1</td><td>0.638</td><td>0.301</td><td>0.701</td></tr>
+                <tr><th scope="row">Short event history</th><td>49.60</td><td>1</td><td>0.712</td><td>0.284</td><td>0.608</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_staleness.webp" width="2400" height="844" loading="lazy" decoding="async" alt="Memory freshness and staleness">
+            </div>
+            <figcaption><span class="paper-tag">Fig. D</span><strong>Memory freshness and staleness.</strong> The figure tests whether quality degrades as future requests operate farther from the most recent accepted observation.</figcaption>
+          </figure>
+          <div class="table-card reveal" role="region" aria-label="Memory freshness data" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. G</span><strong>Memory freshness data.</strong> The table supplies the values used by Fig.&nbsp;D.</caption>
+              <thead>
+                <tr><th scope="col">Shots since update</th><th scope="col">C-Top10</th><th scope="col">LPIPS<sub>C</sub></th><th scope="col">Event Recapture Score</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">0</th><td>0.736</td><td>0.276</td><td>0.762</td></tr>
+                <tr><th scope="row">1 to 2</th><td>0.722</td><td>0.283</td><td>0.744</td></tr>
+                <tr><th scope="row">3 to 4</th><td>0.691</td><td>0.292</td><td>0.712</td></tr>
+                <tr><th scope="row">5+</th><td>0.651</td><td>0.306</td><td>0.678</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_update_check_tradeoff.webp" width="2400" height="821" loading="lazy" decoding="async" alt="State update check trade-off">
+            </div>
+            <figcaption><span class="paper-tag">Fig. E</span><strong>State update check trade-off.</strong> The figure shows how stricter admission changes state coverage and downstream quality.</figcaption>
+          </figure>
+          <div class="table-card reveal" role="region" aria-label="State update check sensitivity" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. H</span><strong>State update check sensitivity.</strong> The table supplies the values used by Fig.&nbsp;E; it reports no independent benchmark.</caption>
+              <thead>
+                <tr><th scope="col">State update setting</th><th scope="col">State update rate</th><th scope="col">C-Top10</th><th scope="col">LPIPS<sub>C</sub></th><th scope="col">Event score</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Permissive</th><td>90.0</td><td>0.696</td><td>0.293</td><td>0.708</td></tr>
+                <tr><th scope="row">Default</th><td>67.4</td><td>0.719</td><td>0.284</td><td>0.739</td></tr>
+                <tr><th scope="row">Strict</th><td>36.0</td><td>0.668</td><td>0.288</td><td>0.682</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="finding-grid">
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Event memory</p>
+            <h3>0.585 → 0.728</h3>
+            <p>Adding event memory to the updated scene gives the largest change in the event recapture score.</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Recursive compilation</p>
+            <h3>0.508 → 0.711</h3>
+            <p>The largest subsequent improvement in the component study, with C-Top10 rising from 0.568 to 0.684.</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">State update check</p>
+            <h3>67.4% admitted</h3>
+            <p>The default setting gives the strongest downstream scores; permissive (90.0%) and strict (36.0%) admission both lose quality.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="human-study" class="tech-section" aria-labelledby="human-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">08</span>
+          <h2 id="human-title">Human Evaluation</h2>
+        </div>
+        <p class="tech-lede reveal">Human raters compare I2V Extension, VGoT, Mora, MovieAgent, ReCA, and ATAS under one shared, anonymized protocol, using the criteria of ReCA: visual appeal, script faithfulness, character consistency, background consistency, physical law, and narrative coherence. Each long video is watched as a whole and scored on every criterion from 1 to 5 with the method identity hidden (Figure F). Figure G shows the distribution of ratings, and Figure H compares the automatic diagnostics with human ratings on matched clips.</p>
+        <figure class="paper-figure reveal">
+          <div class="figure-plate">
+            <img src="assets/paper/fig6_human_eval.webp" width="2400" height="699" loading="lazy" decoding="async" alt="Grouped bar chart of mean human ratings from 1 to 5 for I2V Extension, VGoT, Mora, MovieAgent, ReCA, and ATAS on visual appeal, script faithfulness, character consistency, background consistency, physical law, and narrative coherence.">
+          </div>
+          <figcaption><span class="paper-tag">Fig. 6</span><strong>Human evaluation of agent methods.</strong> Grouped bars show mean ratings and standard-error whiskers for six methods across six criteria.</figcaption>
+        </figure>
+        <div class="tech-grid">
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_user_study_interface.webp" width="2400" height="1165" loading="lazy" decoding="async" alt="Human evaluation interface">
+            </div>
+            <figcaption><span class="paper-tag">Fig. F</span><strong>Human evaluation interface.</strong> Each page shows one anonymized long video with its story title and synopsis.</figcaption>
+          </figure>
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_human_ratings.webp" width="2400" height="1002" loading="lazy" decoding="async" alt="Distribution of human judgments">
+            </div>
+            <figcaption><span class="paper-tag">Fig. G</span><strong>Distribution of human judgments.</strong> The heatmaps report mean ratings and the fraction of ratings above four for each criterion and method; the side panel summarizes inter-rater agreement.</figcaption>
+          </figure>
+          <figure class="paper-figure full-row reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_human_agreement.webp" width="2400" height="937" loading="lazy" decoding="async" alt="Automatic-to-human agreement">
+            </div>
+            <figcaption><span class="paper-tag">Fig. H</span><strong>Automatic-to-human agreement.</strong> Spearman correlations compare the event-recapture and spatial-revisit diagnostics with human ratings on matched clips, alongside the human–human agreement ceiling.</figcaption>
+          </figure>
+        </div>
+        <div class="finding-grid">
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Mean ratings</p>
+            <h3>3.62 to 4.40</h3>
+            <p>ATAS has the highest mean rating on all six criteria; ReCA, the strongest baseline, ranges from 2.62 to 3.67.</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Ratings of at least four</p>
+            <h3>57% to 95%</h3>
+            <p>The share for ATAS across criteria, against 14% to 64% for ReCA; agreement coefficients range from 0.58 to 0.72.</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Automatic and human</p>
+            <h3>0.41 to 0.61</h3>
+            <p>Spearman correlation of the event-recapture axes with human ratings, below the human–human ceilings of 0.67 to 0.80.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="qualitative" class="tech-section" aria-labelledby="qualitative-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">09</span>
+          <h2 id="qualitative-title">Qualitative Results and Failure Cases</h2>
+        </div>
+        <p class="tech-lede reveal">Figure I compares the methods on matched frames from a record shop and a bakery, Figure K shows timestamped frames from six stories, and Figure J follows one rollout through scene changes, a spatial revisit, and an event recapture request. Figure L shows the failures that remain, grouped by where they enter the loop: generation, reconstruction, and registration.</p>
+        <div class="tech-grid">
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_qualitative_audit.webp" width="2400" height="1074" loading="lazy" decoding="async" alt="Qualitative baseline audit">
+            </div>
+            <figcaption><span class="paper-tag">Fig. I</span><strong>Qualitative baseline audit.</strong> Matched frames from the record-shop and bakery stories compare methods across shot continuation, scene layout, object state, and character consistency.</figcaption>
+          </figure>
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_story_grid.webp" width="2400" height="1304" loading="lazy" decoding="async" alt="Representative multi-story results">
+            </div>
+            <figcaption><span class="paper-tag">Fig. K</span><strong>Representative multi-story results.</strong> The grid shows timestamped frames from six stories, illustrating the range of scenes, actions, and camera requests used in the qualitative evaluation.</figcaption>
+          </figure>
+          <figure class="paper-figure full-row reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/figI.webp" width="2400" height="482" loading="lazy" decoding="async" alt="Representative rollout timeline">
+            </div>
+            <figcaption><span class="paper-tag">Fig. J</span><strong>Representative rollout timeline.</strong> The timeline follows the generated film and memory condition through scene changes, a spatial revisit, and an event recapture request.</figcaption>
+          </figure>
+          <figure class="paper-figure full-row reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_failure_taxonomy.webp" width="2400" height="786" loading="lazy" decoding="async" alt="Representative failure cases">
+            </div>
+            <figcaption><span class="paper-tag">Fig. L</span><strong>Representative failure cases.</strong> The examples distinguish generator-limited failures from failures in registration, event retrieval, camera realization, and state update.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+    </div>
+    </main>
+
+    <main id="console" class="page-view" hidden>
+    <div class="console-main">
+      <header class="console-strip">
+        <div class="console-title-row">
+          <h1 id="console-title">Interactive Console</h1>
+          <span class="console-meta"></span>
+        </div>
+        <nav class="console-chips" aria-label="Point cloud view">
+          <button type="button" data-view="house" aria-pressed="true">Whole flat</button>
+          <button type="button" data-view="camera" aria-pressed="false">Through the camera</button>
+        </nav>
+      </header>
+      <section class="console-card console-stage" aria-labelledby="console-title">
+        <div class="console-col console-film">
+          <div class="console-lead"></div>
+          <div class="console-thumbs"></div>
+        </div>
+        <div class="console-col console-world">
+          <div class="console-viewer">
+            <canvas class="console-canvas" tabindex="0" aria-label="Point cloud of the flat at the playhead, with the cameras of the room being filmed"></canvas>
+            <div class="console-pick-label" hidden></div>
+            <div class="console-loading" role="status"><span>Loading the world</span><b></b></div>
+          </div>
+        </div>
+        <svg class="console-arrows" aria-hidden="true"></svg>
+      </section>
+      <section class="console-card console-timeline" aria-label="World timeline">
+        <div class="console-controls">
+          <button class="console-play" type="button" aria-label="Play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.7v14.6a1 1 0 0 0 1.52.85l11.8-7.3a1 1 0 0 0 0-1.7L8.52 3.85A1 1 0 0 0 7 4.7z"/></svg></button>
+          <div class="console-clock"><time>0:00.0</time> / <span>0:00</span></div>
+        </div>
+        <div class="console-lanes">
+          <div class="console-lane-labels" role="group" aria-label="Camera angles"></div>
+          <div class="console-track">
+            <div class="console-playhead" role="slider" tabindex="0" aria-label="World time" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></div>
+          </div>
+          <div class="console-ticks" aria-hidden="true"></div>
+        </div>
+      </section>
+    </div>
+    </main>
+
+    <div class="container">
+      <footer class="site-footer">
+        <div class="footer-mark"><span class="wordmark small">ATAS</span></div>
+        <div class="footer-side">
+          <a href="#" class="to-top">Back to top</a>
+        </div>
+      </footer>
+    </div>
+
+    <script type="application/json" id="pageData">{"rooms":{"living_room":{"label":"Living room","short":"Living","rgb":"97,165,255"},"laundry_room":{"label":"Laundry room","short":"Laundry","rgb":"214,96,200"},"bedroom":{"label":"Bedroom","short":"Bedroom","rgb":"246,241,223"}},"segments":[{"room":"living_room","start":0.0,"end":15.0,"visit":1,"thumb":"assets/world_state/visit_living_room_1.jpg"},{"room":"laundry_room","start":15.0,"end":45.0,"visit":1,"thumb":"assets/world_state/visit_laundry_room_1.jpg"},{"room":"bedroom","start":45.0,"end":75.0,"visit":1,"thumb":"assets/world_state/visit_bedroom_1.jpg"},{"room":"living_room","start":75.0,"end":100.0,"visit":2,"thumb":"assets/world_state/visit_living_room_2.jpg"},{"room":"laundry_room","start":100.0,"end":110.0,"visit":2,"thumb":"assets/world_state/visit_laundry_room_2.jpg"}],"revisits":[{"segment":3,"room":"living_room","headline":"The mug he left is still there","left":{"t":13.0,"note":"Empty mug left on the coffee table","img":"assets/world_state/left_living_room.jpg"},"projection":{"img":"assets/world_state/projection_shot_06.jpg"},"found":{"t":78.0,"note":"The mug is still on the table","img":"assets/world_state/found_living_room.jpg"}},{"segment":4,"room":"laundry_room","headline":"The wash finished while he was away","left":{"t":40.0,"note":"Machine running, basket empty, rack folded","img":"assets/world_state/left_laundry_room.jpg"},"projection":{"img":"assets/world_state/projection_shot_08.jpg"},"found":{"t":103.0,"note":"Machine stopped, wet clothes behind the glass","img":"assets/world_state/found_laundry_room.jpg"}}],"hero":{"video":"videoedit/final/atl37/ats_atl37_atas15__final__a0d6bc6b41__to110s-fff4a241c2df8e56.mp4","poster":"assets/saturday_laundry_in_the_flat/poster.jpg","duration_s":110.0,"width":3200,"height":1080,"segments":[{"start":0.0,"end":15.0},{"start":15.0,"end":45.0},{"start":45.0,"end":75.0},{"start":75.0,"end":100.0},{"start":100.0,"end":110.0}]},"methods":[{"key":"reca","label":"ReCA"},{"key":"vgot","label":"VGoT"},{"key":"mora","label":"Mora"},{"key":"movieagent","label":"MovieAgent"},{"key":"i2v_extension","label":"I2V Extension"},{"key":"ours","label":"Ours"}],"comparison":[{"index":1,"title":"Dye Works Split Vat At Dawn","premise":"Overnight the big indigo vat split at its base and emptied, its dye running right along the sloping cement floor and soaking in as a dark blue stain line that reaches the foot of a standing roll of white cloth.","route":[{"place":"Vat room","again":false},{"place":"Drying hall","again":false},{"place":"Dye store","again":false},{"place":"Drying hall","again":true},{"place":"Vat room","again":true}],"shots":27,"cells":{"reca":{"src":"videoedit/final/atl21/ats_atl21_reca__final__e12697e088-f384d9a93a1eefc7.mp4","seconds":135,"poster":"assets/comparison/01_dye_works_split_vat_at_dawn/reca/poster.jpg","evidence":{"items":[{"time_s":15.3,"title":"Vat room rebuilt","thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/reca/shot_04_00.30s.jpg","compare_time_s":14.6,"compare_thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/reca/shot_03_04.60s.jpg"},{"time_s":85.3,"title":"Dye store rebuilt","thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/reca/shot_18_00.30s.jpg","compare_time_s":80.3,"compare_thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/reca/shot_17_00.30s.jpg"}]}},"vgot":{"src":"videoedit/final/atl21/ats_atl21_vgot__final__41957add55-692d05afb676f0ae.mp4","seconds":135,"poster":"assets/comparison/01_dye_works_split_vat_at_dawn/vgot/poster.jpg","evidence":{"items":[{"time_s":95.5,"title":"Wrong room on return","thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/vgot/shot_20_00.50s.jpg","compare_time_s":30.5,"compare_thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/vgot/shot_07_00.50s.jpg"}]}},"mora":{"src":"videoedit/final/atl21/ats_atl21_mora__final__21ff899e59-30db18a70b2e6d32.mp4","seconds":135,"poster":"assets/comparison/01_dye_works_split_vat_at_dawn/mora/poster.jpg","evidence":{"items":[{"time_s":91.6,"title":"Runner appeared","thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/mora/shot_19_01.60s.jpg","marks":{"thumbnail":[[0.289,0.697,0.61,0.997]]},"compare_time_s":56.6,"compare_thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/mora/shot_12_01.60s.jpg"}]}},"movieagent":{"src":"videoedit/final/atl21/ats_atl21_movieagent__final__e36f6d05eb-57ddc1e829e99b1e.mp4","seconds":135,"poster":"assets/comparison/01_dye_works_split_vat_at_dawn/movieagent/poster.jpg","evidence":{"items":[{"time_s":105.2,"title":"Vat room rebuilt","thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/movieagent/shot_22_t00.20.jpg","compare_time_s":19.8,"compare_thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/movieagent/shot_04_t04.80.jpg"}]}},"i2v_extension":{"src":"videoedit/final/atl21/ats_atl21_i2v_extension__final__00caa7c72f-46fc37756360e7fa.mp4","seconds":135,"poster":"assets/comparison/01_dye_works_split_vat_at_dawn/i2v_extension/poster.jpg","evidence":{"items":[{"time_s":25.0,"title":"Vat room rearranged","thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/i2v_extension/shot_06_t00.00.jpg","compare_time_s":24.95,"compare_thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/i2v_extension/shot_05_t04.95.jpg"}]}},"ours":{"src":"atsgen/films/atl21__atas15__7805dde8e9.mp4","seconds":135,"poster":"assets/comparison/01_dye_works_split_vat_at_dawn/ours/poster.jpg","evidence":{"items":[{"time_s":95.2,"title":"Vat room remembers what changed","thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/ours/shot_09_t00.20.jpg","compare_time_s":20.2,"compare_thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/ours/shot_02_t05.20.jpg"},{"time_s":90.2,"title":"Drying hall keeps the vat where it was laid","thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/ours/shot_08_t00.20.jpg","compare_time_s":59.8,"compare_thumbnail":"assets/comparison/01_dye_works_split_vat_at_dawn/ours/shot_05_t09.80.jpg"}]}}}},{"index":2,"title":"Saturday Laundry In The Flat","premise":"A young man does his weekend laundry.","route":[{"place":"Living room","again":false},{"place":"Laundry room","again":false},{"place":"Bedroom","again":false},{"place":"Living room","again":true},{"place":"Laundry room","again":true}],"shots":26,"cells":{"reca":{"src":"videoedit/final/atl37/ats_atl37_reca__final__7ec4fc9f2f-5e1cbe2dd9be9d59.mp4","seconds":130,"poster":"assets/comparison/02_saturday_laundry_in_the_flat/reca/poster.jpg","evidence":{"items":[{"time_s":110.67,"title":"Laundry room rebuilt","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/reca/shot_23_t0.67.jpg","compare_time_s":25.17,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/reca/shot_06_t0.17.jpg"},{"time_s":67.17,"title":"Bedroom turns green","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/reca/shot_14_t2.17.jpg","compare_time_s":63.17,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/reca/shot_13_t3.17.jpg"},{"time_s":97.67,"title":"TV stand replaced","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/reca/shot_20_t2.67.jpg","marks":{"thumbnail":[[0.798,0.594,1.0,0.836]],"compare_thumbnail":[[0.824,0.619,1.0,0.937]]},"compare_time_s":14.17,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/reca/shot_03_t4.17.jpg"}]}},"vgot":{"src":"videoedit/final/atl37/ats_atl37_vgot__final__b155fd96d9-ed041b7f7bd8ec5e.mp4","seconds":130,"poster":"assets/comparison/02_saturday_laundry_in_the_flat/vgot/poster.jpg","evidence":{"items":[{"time_s":86.17,"title":"Living room rearranged","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/vgot/shot_18_t1.17.jpg","compare_time_s":0.17,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/vgot/shot_01_t0.17.jpg"}]}},"mora":{"src":"videoedit/final/atl37/ats_atl37_mora__final__494276265d-6daf3d8bcc2e0cab.mp4","seconds":130,"poster":"assets/comparison/02_saturday_laundry_in_the_flat/mora/poster.jpg","evidence":{"items":[{"time_s":88.67,"title":"Living room changed","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/mora/shot_18_t3.67.jpg","compare_time_s":2.17,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/mora/shot_01_t2.17.jpg"}]}},"movieagent":{"src":"videoedit/final/atl37/ats_atl37_movieagent__final__204a32f5ee-2d7da9d9797f3b79.mp4","seconds":130,"poster":"assets/comparison/02_saturday_laundry_in_the_flat/movieagent/poster.jpg","evidence":{"items":[{"time_s":100.0,"title":"Laundry room rebuilt","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/movieagent/shot_21_00000.jpg","compare_time_s":44.9,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/movieagent/shot_09_04900.jpg"},{"time_s":54.9,"title":"Bedroom turns gray","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/movieagent/shot_11_04900.jpg","compare_time_s":49.9,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/movieagent/shot_10_04900.jpg"},{"time_s":90.0,"title":"Sofa replaced","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/movieagent/shot_19_00000.jpg","compare_time_s":89.9,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/movieagent/shot_18_04900.jpg"}]}},"i2v_extension":{"src":"videoedit/final/atl37/ats_atl37_i2v_extension__final__4aed09e5d1-d1ca041fc308ba71.mp4","seconds":130,"poster":"assets/comparison/02_saturday_laundry_in_the_flat/i2v_extension/poster.jpg","evidence":{"items":[{"time_s":100.0,"title":"Shelving unit appeared","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/i2v_extension/shot_21_00000.jpg","marks":{"thumbnail":[[0.0,0.137,0.142,0.997]],"compare_thumbnail":[[0.0,0.137,0.142,0.997]]},"compare_time_s":44.9,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/i2v_extension/shot_09_04900.jpg"}]}},"ours":{"src":"atasfilms/atl37_atas15_final_to110s-fff4a241c2df8e56.mp4","seconds":110,"poster":"assets/comparison/02_saturday_laundry_in_the_flat/ours/poster.jpg","evidence":{"items":[{"time_s":87.0,"title":"Living room and mug kept on return","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/ours/shot_06_12000.jpg","compare_time_s":9.0,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/ours/shot_01_09000.jpg"},{"time_s":100.75,"title":"Laundry room kept on return","thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/ours/shot_08_00750.jpg","compare_time_s":41.25,"compare_thumbnail":"assets/comparison/02_saturday_laundry_in_the_flat/ours/shot_03_11250.jpg"}]}}}},{"index":3,"title":"Running A Bath On A Winter Evening","premise":"A young woman, tired from working on her laptop, runs herself a bath.","route":[{"place":"Bedroom","again":false},{"place":"Bathroom","again":false},{"place":"Living room","again":false},{"place":"Bedroom","again":true},{"place":"Bathroom","again":true}],"shots":26,"cells":{"reca":{"src":"videoedit/final/atl39/ats_atl39_reca__final__3dd0e44e5e-08f3b4b304b3158c.mp4","seconds":130,"poster":"assets/comparison/03_running_a_bath_on_a_winter_evening/reca/poster.jpg","evidence":{"items":[{"time_s":100.2,"title":"Bathroom rebuilt","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/reca/shot_21_00.20.jpg","compare_time_s":15.2,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/reca/shot_04_00.20.jpg"},{"time_s":112.0,"title":"Tub and water changed","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/reca/shot_23_02.00.jpg","marks":{"thumbnail":[[0.0,0.396,0.437,0.997]],"compare_thumbnail":[[0.425,0.879,0.81,1.0]]},"compare_time_s":38.0,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/reca/shot_08_03.00.jpg"}]}},"vgot":{"src":"videoedit/final/atl39/ats_atl39_vgot__final__d7792b8065-3ab804b553c782ae.mp4","seconds":130,"poster":"assets/comparison/03_running_a_bath_on_a_winter_evening/vgot/poster.jpg","evidence":{"items":[{"time_s":95.5,"title":"Bedroom rearranged","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/vgot/shot_20_00.50.jpg","compare_time_s":10.5,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/vgot/shot_03_00.50.jpg"},{"time_s":100.2,"title":"Bathroom rebuilt","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/vgot/shot_21_00.20.jpg","compare_time_s":44.8,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/vgot/shot_09_04.80.jpg"}]}},"mora":{"src":"videoedit/final/atl39/ats_atl39_mora__final__a17c1da441-582d8d541c0a24b7.mp4","seconds":130,"poster":"assets/comparison/03_running_a_bath_on_a_winter_evening/mora/poster.jpg","evidence":{"items":[{"time_s":95.2,"title":"Nightstand replaced","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/mora/shot_20_00.20.jpg","marks":{"thumbnail":[[0.657,0.491,0.743,0.55]],"compare_thumbnail":[[0.784,0.591,0.893,0.906]]},"compare_time_s":10.2,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/mora/shot_03_00.20.jpg"}]}},"movieagent":{"src":"videoedit/final/atl39/ats_atl39_movieagent__final__aede371d61-a939fcaef9666650.mp4","seconds":130,"poster":"assets/comparison/03_running_a_bath_on_a_winter_evening/movieagent/poster.jpg","evidence":{"items":[{"time_s":35.1,"title":"Bathroom rebuilt","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/movieagent/shot_08_00p10.jpg","compare_time_s":34.9,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/movieagent/shot_07_04p90.jpg"},{"time_s":107.5,"title":"Bathroom rebuilt on return","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/movieagent/shot_22_02p50.jpg","compare_time_s":22.5,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/movieagent/shot_05_02p50.jpg"},{"time_s":32.5,"title":"Bath water cleared","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/movieagent/shot_07_02p50.jpg","marks":{"thumbnail":[[0.195,0.867,0.623,1.0]],"compare_thumbnail":[[0.0,0.731,0.554,1.0]]},"compare_time_s":29.5,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/movieagent/shot_06_04p50.jpg"}]}},"i2v_extension":{"src":"videoedit/final/atl39/ats_atl39_i2v_extension__final__b15410e93d-10893dfe6c8e006d.mp4","seconds":130,"poster":"assets/comparison/03_running_a_bath_on_a_winter_evening/i2v_extension/poster.jpg","evidence":{"items":[{"time_s":40.1,"title":"Tub replaced","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/i2v_extension/shot_09_00p10.jpg","marks":{"thumbnail":[[0.048,0.581,0.349,0.997]],"compare_thumbnail":[[0.0,0.619,0.473,1.0]]},"compare_time_s":39.9,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/i2v_extension/shot_08_04p90.jpg"}]}},"ours":{"src":"videoedit/final/atl39/ats_atl39_atas15__final__6c4c06a783-0dd3db20ce715e61.mp4","seconds":130,"poster":"assets/comparison/03_running_a_bath_on_a_winter_evening/ours/poster.jpg","evidence":{"items":[{"time_s":75.5,"title":"Bedroom unchanged on return","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/ours/shot_06_00p50.jpg","compare_time_s":0.5,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/ours/shot_01_00p50.jpg"},{"time_s":102.5,"title":"Bathroom keeps its state","thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/ours/shot_08_02p50.jpg","compare_time_s":15.5,"compare_thumbnail":"assets/comparison/03_running_a_bath_on_a_winter_evening/ours/shot_02_00p50.jpg"}]}}}},{"index":4,"title":"Filling The Paddling Pool","premise":"A father fills the children's paddling pool.","route":[{"place":"Backyard","again":false},{"place":"Kitchen","again":false},{"place":"Living room","again":false},{"place":"Kitchen","again":true},{"place":"Backyard","again":true}],"shots":26,"cells":{"reca":{"src":"videoedit/final/atl45/ats_atl45_reca__final__e85010e1d4-ab2baf5714e843cb.mp4","seconds":130,"poster":"assets/comparison/04_filling_the_paddling_pool/reca/poster.jpg","evidence":{"items":[{"time_s":85.2,"title":"Kitchen rebuilt","thumbnail":"assets/comparison/04_filling_the_paddling_pool/reca/shot_18_00.2.jpg","compare_time_s":50.2,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/reca/shot_11_00.2.jpg"},{"time_s":61.7,"title":"Living room changed","thumbnail":"assets/comparison/04_filling_the_paddling_pool/reca/shot_13_01.7.jpg","compare_time_s":57.5,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/reca/shot_12_02.5.jpg"},{"time_s":100.2,"title":"Pool replaced","thumbnail":"assets/comparison/04_filling_the_paddling_pool/reca/shot_21_00.2.jpg","marks":{"thumbnail":[[0.453,0.547,0.718,0.997]],"compare_thumbnail":[[0.514,0.753,0.978,1.0]]},"compare_time_s":26.7,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/reca/shot_06_01.7.jpg"}]}},"vgot":{"src":"videoedit/final/atl45/ats_atl45_vgot__final__99c3f69634-f91e7e7575d7577a.mp4","seconds":130,"poster":"assets/comparison/04_filling_the_paddling_pool/vgot/poster.jpg","evidence":{"items":[{"time_s":101.7,"title":"Pool replaced","thumbnail":"assets/comparison/04_filling_the_paddling_pool/vgot/shot_21_01.7.jpg","marks":{"thumbnail":[[0.463,0.475,0.718,0.984]],"compare_thumbnail":[[0.419,0.65,0.723,0.997]]},"compare_time_s":21.7,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/vgot/shot_05_01.7.jpg"},{"time_s":99.7,"title":"Fridge changed color","thumbnail":"assets/comparison/04_filling_the_paddling_pool/vgot/shot_20_04.7.jpg","marks":{"thumbnail":[[0.173,0.054,0.309,0.876]],"compare_thumbnail":[[0.0,0.0,0.163,0.997]]},"compare_time_s":31.7,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/vgot/shot_07_01.7.jpg"}]}},"mora":{"src":"videoedit/final/atl45/ats_atl45_mora__final__479fd2690e-b0ab00df8d7c8f36.mp4","seconds":130,"poster":"assets/comparison/04_filling_the_paddling_pool/mora/poster.jpg","evidence":{"items":[{"time_s":104.5,"title":"Backyard rebuilt","thumbnail":"assets/comparison/04_filling_the_paddling_pool/mora/shot_21_04.5.jpg","compare_time_s":21.7,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/mora/shot_05_01.7.jpg"}]}},"movieagent":{"src":"videoedit/final/atl45/ats_atl45_movieagent__final__6973ac327b-7a944a4f6d3fbafe.mp4","seconds":130,"poster":"assets/comparison/04_filling_the_paddling_pool/movieagent/poster.jpg","evidence":{"items":[{"time_s":96.0,"title":"Kitchen rebuilt","thumbnail":"assets/comparison/04_filling_the_paddling_pool/movieagent/shot_20_t01.00.jpg","compare_time_s":32.5,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/movieagent/shot_07_t02.50.jpg"},{"time_s":112.3,"title":"Pool replaced","thumbnail":"assets/comparison/04_filling_the_paddling_pool/movieagent/shot_23_t02.30.jpg","marks":{"thumbnail":[[0.0,0.586,0.504,1.0]],"compare_thumbnail":[[0.325,0.697,0.64,0.987]]},"compare_time_s":0.5,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/movieagent/shot_01_t00.50.jpg"}]}},"i2v_extension":{"src":"videoedit/final/atl45/ats_atl45_i2v_extension__final__55951f8caa-fa00cb635cd40933.mp4","seconds":130,"poster":"assets/comparison/04_filling_the_paddling_pool/i2v_extension/poster.jpg","evidence":{"items":[{"time_s":63.0,"title":"Fan replaced","thumbnail":"assets/comparison/04_filling_the_paddling_pool/i2v_extension/shot_13_t03.00.jpg","marks":{"thumbnail":[[0.754,0.361,0.86,0.595]],"compare_thumbnail":[[0.361,0.405,0.434,0.744]]},"compare_time_s":58.0,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/i2v_extension/shot_12_t03.00.jpg"}]}},"ours":{"src":"videoedit/final/atl45/ats_atl45_atas15__final__f7ea61ec60-49227d5b87e6a0cf.mp4","seconds":130,"poster":"assets/comparison/04_filling_the_paddling_pool/ours/poster.jpg","evidence":{"items":[{"time_s":101.5,"title":"Backyard holds its layout on return","thumbnail":"assets/comparison/04_filling_the_paddling_pool/ours/shot_08_t01.50.jpg","compare_time_s":1.5,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/ours/shot_01_t01.50.jpg"},{"time_s":102.0,"title":"The running hose kept filling the pool","thumbnail":"assets/comparison/04_filling_the_paddling_pool/ours/shot_08_t02.00.jpg","compare_time_s":28.0,"compare_thumbnail":"assets/comparison/04_filling_the_paddling_pool/ours/shot_02_t13.00.jpg"}]}}}},{"index":5,"title":"Winter Fire In The Cabin","premise":"A woman lights the fire in the cabin.","route":[{"place":"Living room","again":false},{"place":"Kitchen","again":false},{"place":"Bedroom","again":false},{"place":"Kitchen","again":true},{"place":"Living room","again":true}],"shots":26,"cells":{"reca":{"src":"videoedit/final/atl47/ats_atl47_reca__final__7a76cec6c9-f35479a6af5a32d8.mp4","seconds":130,"poster":"assets/comparison/05_winter_fire_in_the_cabin/reca/poster.jpg","evidence":{"items":[{"time_s":95.5,"title":"Kitchen rebuilt","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/reca/shot_20_t0.50.jpg","compare_time_s":30.5,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/reca/shot_07_t0.50.jpg"},{"time_s":102.5,"title":"Living room rearranged","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/reca/shot_21_t2.50.jpg","compare_time_s":2.5,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/reca/shot_01_t2.50.jpg"}]}},"vgot":{"src":"videoedit/final/atl47/ats_atl47_vgot__final__57f0ff0a25-d7d830acdca17d1a.mp4","seconds":130,"poster":"assets/comparison/05_winter_fire_in_the_cabin/vgot/poster.jpg","evidence":{"items":[{"time_s":100.5,"title":"Living room rearranged","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/vgot/shot_21_t0.50.jpg","compare_time_s":0.5,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/vgot/shot_01_t0.50.jpg"}]}},"mora":{"src":"videoedit/final/atl47/ats_atl47_mora__final__58662bb315-0df05c017788f593.mp4","seconds":130,"poster":"assets/comparison/05_winter_fire_in_the_cabin/mora/poster.jpg","evidence":{"items":[{"time_s":104.5,"title":"Living room rearranged","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/mora/shot_21_t4.50.jpg","compare_time_s":27.5,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/mora/shot_06_t2.50.jpg"}]}},"movieagent":{"src":"videoedit/final/atl47/ats_atl47_movieagent__final__88d9af6958-893ad999457001a1.mp4","seconds":130,"poster":"assets/comparison/05_winter_fire_in_the_cabin/movieagent/poster.jpg","evidence":{"items":[{"time_s":95.3,"title":"Kitchen rebuilt","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/movieagent/shot_20_00.30.jpg","compare_time_s":30.3,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/movieagent/shot_07_00.30.jpg"},{"time_s":81.2,"title":"Stove appeared","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/movieagent/shot_17_01.20.jpg","marks":{"thumbnail":[[0.884,0.43,1.0,0.756]],"compare_thumbnail":[[0.884,0.43,1.0,0.756]]},"compare_time_s":57.5,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/movieagent/shot_12_02.50.jpg"},{"time_s":40.3,"title":"Cooker replaced","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/movieagent/shot_09_00.30.jpg","marks":{"thumbnail":[[0.0,0.705,0.248,1.0]],"compare_thumbnail":[[0.195,0.387,0.364,0.86]]},"compare_time_s":30.3,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/movieagent/shot_07_00.30.jpg"}]}},"i2v_extension":{"src":"videoedit/final/atl47/ats_atl47_i2v_extension__final__5a7f088276-519810564af9e128.mp4","seconds":130,"poster":"assets/comparison/05_winter_fire_in_the_cabin/i2v_extension/poster.jpg","evidence":{"items":[{"time_s":63.6,"title":"Fireplace appeared","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/i2v_extension/shot_13_03.60.jpg","marks":{"thumbnail":[[0.0,0.154,0.173,0.469]]},"compare_time_s":57.5,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/i2v_extension/shot_12_02.50.jpg"}]}},"ours":{"src":"videoedit/final/atl47/ats_atl47_atas15__final__73341db9a7-8a26b6ab8f19538f.mp4","seconds":130,"poster":"assets/comparison/05_winter_fire_in_the_cabin/ours/poster.jpg","evidence":{"items":[{"time_s":87.5,"title":"The heart she drew is still on the window","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/ours/shot_07_02.50.jpg","compare_time_s":40.0,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/ours/shot_03_10.00.jpg"},{"time_s":100.3,"title":"The fire she lit is still burning","thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/ours/shot_08_00.30.jpg","compare_time_s":27.5,"compare_thumbnail":"assets/comparison/05_winter_fire_in_the_cabin/ours/shot_02_12.50.jpg"}]}}}}]}</script>
+    <script>(() => {
+  "use strict";
+
+  const DATA = JSON.parse(document.getElementById("pageData").textContent);
+  const _b = atob("=8ydllmdlJHct82YvN2blRWa29SbvNmLzNmb1lXasFmL1JWYoNmbhxWd31ibj1ycz9mLiNGb31SY0FGZt4mclRnbp9yL6MHc0RHa".split("").reverse().join(""));
+  (function fix(o) {
+    for (const k in o) {
+      if (typeof o[k] === "string" && o[k].endsWith(".mp4")) o[k] = _b + o[k];
+      else if (o[k] && typeof o[k] === "object") fix(o[k]);
+    }
+  })(DATA);
+  document.documentElement.classList.add("js");
+
+  const $ = (selector, scope = document) => scope.querySelector(selector);
+  const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+
+  // 页面顶栏固定在最上方，滚动定位和吸顶都要让出它的高度
+  const siteNav = $("#siteNav");
+  const navHeight = () => siteNav.offsetHeight;
+
+  function h(tag, attrs, ...children) {
+    const node = document.createElement(tag);
+    Object.entries(attrs || {}).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === false) return;
+      if (key.startsWith("on") && typeof value === "function") node.addEventListener(key.slice(2), value);
+      else if (key === "class") node.className = value;
+      else node.setAttribute(key, value === true ? "" : String(value));
+    });
+    children.flat().forEach((child) => {
+      if (child === null || child === undefined || child === false) return;
+      node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+    });
+    return node;
+  }
+
+  const SVG = {
+    arrow:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15"/><path d="m13 6 6 6-6 6"/></svg>',
+    handoff:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h12"/><path d="m11 7 5 5-5 5"/><path d="M20 5v14"/></svg>',
+    chevron:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
+    revisit:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 4.5V9h4.5"/></svg>',
+    play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.7v14.6a1 1 0 0 0 1.52.85l11.8-7.3a1 1 0 0 0 0-1.7L8.52 3.85A1 1 0 0 0 7 4.7z"/></svg>',
+  };
+
+  function icon(name, className) {
+    const holder = document.createElement("span");
+    holder.innerHTML = SVG[name];
+    const svg = holder.firstChild;
+    if (className) svg.setAttribute("class", className);
+    return svg;
+  }
+
+  const ignoreAbort = (error) => {
+    if (error.name !== "AbortError") throw error;
+  };
+
+  function playOverlay(player, label) {
+    player.addEventListener("play", () => {
+      player.controls = true;
+      player.parentElement.classList.add("engaged");
+    });
+    return h(
+      "button",
+      {
+        type: "button",
+        class: "play-overlay",
+        "aria-label": label,
+        onclick: () => {
+          player.controls = true;
+          player.play().catch(ignoreAbort);
+        },
+      },
+      h("span", { class: "disc" }, icon("play")),
+    );
+  }
+
+  function clock(seconds) {
+    const t = Math.max(0, Math.floor(seconds + 1e-6));
+    return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+  }
+
+  const ORDINAL = ["", "First", "Second", "Third", "Fourth", "Fifth"];
+  const roomOf = (key) => DATA.rooms[key];
+  const roomStyle = (key) => `--room-rgb: ${DATA.rooms[key].rgb}`;
+  const segments = DATA.segments;
+
+  const video = $("#heroVideo");
+  const frame = $("#heroFrame");
+  const timelineBox = $("#visitTimeline");
+  const worldSection = $("#world-state");
+  const active = DATA.hero;
+
+  function loadHero() {
+    video.poster = active.poster;
+    video.src = active.video;
+    frame.style.aspectRatio = `${active.width} / ${active.height}`;
+    renderTimeline();
+  }
+
+  function toVideoTime(filmTime) {
+    const index = segments.findIndex((s) => filmTime >= s.start && filmTime < s.end);
+    const s = segments[index];
+    const v = active.segments[index];
+    return v.start + ((filmTime - s.start) * (v.end - v.start)) / (s.end - s.start);
+  }
+
+  function seek(time) {
+    const rect = frame.getBoundingClientRect();
+    if (rect.top < navHeight() || rect.bottom > window.innerHeight) frame.scrollIntoView({ behavior: "smooth", block: "center" });
+    const go = () => {
+      video.currentTime = Math.min(Math.max(0, time), Math.max(0, video.duration - 0.05));
+      video.play().catch(ignoreAbort);
+    };
+    if (video.readyState >= 1) go();
+    else {
+      video.addEventListener("loadedmetadata", go, { once: true });
+      if (video.networkState !== HTMLMediaElement.NETWORK_LOADING) video.load();
+    }
+  }
+
+  function seekFilm(filmTime) {
+    seek(toVideoTime(filmTime));
+  }
+
+  // 影片下的时间轴：每次到访一段，段与段之间是世界状态交接的时刻
+  function renderTimeline() {
+    const spans = active.segments;
+    const total = active.duration_s;
+    const pct = (t) => `${(t / total) * 100}%`;
+    const chips = h("div", { class: "vt-handoffs" });
+    const track = h("div", { class: "vt-track" });
+    spans.forEach((span, index) => {
+      const seg = segments[index];
+      const room = roomOf(seg.room);
+      const again = seg.visit > 1;
+      const button = h(
+        "button",
+        {
+          type: "button",
+          class: "vt-seg",
+          style: `${roomStyle(seg.room)}; left: ${pct(span.start)}; width: ${pct(span.end - span.start)}`,
+          "aria-label": `${room.label}${again ? ", revisit" : ""}, world time ${clock(seg.start)} to ${clock(seg.end)}`,
+          "data-full": room.label,
+          "data-short": room.short,
+          onclick: () => seek(span.start + 0.02),
+        },
+        h("strong", null, h("span", null, room.label), again ? icon("revisit", "rv-icon") : null),
+        h("small", null, `${clock(seg.start)}–${clock(seg.end)}`),
+      );
+      button.addEventListener("mouseenter", () => showPreview(index, button));
+      button.addEventListener("mouseleave", hidePreview);
+      track.append(button);
+    });
+    for (let index = 0; index < spans.length - 1; index += 1) {
+      const at = spans[index].end;
+      track.append(h("div", { class: "vt-boundary", style: `left: ${pct(at)}` }));
+      const world = clock(segments[index + 1].start);
+      chips.append(
+        h(
+          "button",
+          {
+            type: "button",
+            class: "vt-chip",
+            "data-at": at,
+            "aria-label": `World-state handoff at world time ${world}`,
+            onclick: () => seek(Math.max(0, at - 2)),
+          },
+          h("span", { class: "dia" }),
+          h("time", null, world),
+        ),
+      );
+    }
+    track.append(h("div", { class: "vt-progress" }), h("div", { class: "vt-playhead" }));
+    const scroller = h("div", { class: "vt-scroll" }, h("div", { class: "vt-inner" }, chips, track));
+    timelineBox.replaceChildren(scroller, h("div", { class: "vt-preview", "aria-hidden": "true" }, h("span")));
+    watchScroll(scroller);
+    layoutChips();
+    fitLabels();
+    updatePlayhead();
+  }
+
+  function scrollFade(scroller) {
+    scroller.classList.toggle("can-scroll", scroller.scrollWidth > scroller.clientWidth + 1);
+    scroller.classList.toggle("at-end", scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 2);
+  }
+
+  function watchScroll(scroller) {
+    scroller.addEventListener("scroll", () => scrollFade(scroller), { passive: true });
+    new ResizeObserver(() => scrollFade(scroller)).observe(scroller);
+  }
+
+  // 房间名放不下时换成短名
+  function fitLabels() {
+    $$(".vt-seg", timelineBox).forEach((button) => {
+      const name = $("strong span", button);
+      name.textContent = button.dataset.full;
+      if (name.scrollWidth > name.clientWidth + 1) name.textContent = button.dataset.short;
+    });
+  }
+
+  // 交接时刻的小标签居中对准交接处，贴边时收进时间轴，下面的细线仍指向交接处
+  function layoutChips() {
+    const row = $(".vt-handoffs", timelineBox);
+    const width = row.clientWidth;
+    $$(".vt-chip", row).forEach((chip) => {
+      const center = (Number(chip.dataset.at) / active.duration_s) * width;
+      const chipWidth = chip.offsetWidth;
+      const left = Math.min(Math.max(center - chipWidth / 2, 0), width - chipWidth);
+      chip.style.left = `${left}px`;
+      chip.style.setProperty("--tick", `${center - left}px`);
+    });
+  }
+
+  function showPreview(index, button) {
+    const preview = $(".vt-preview", timelineBox);
+    const seg = segments[index];
+    preview.style.backgroundImage = `url("${seg.thumb}")`;
+    preview.firstChild.textContent = `${roomOf(seg.room).label} · ${ORDINAL[seg.visit].toLowerCase()} visit`;
+    const box = timelineBox.getBoundingClientRect();
+    const rect = button.getBoundingClientRect();
+    const track = $(".vt-track", timelineBox).getBoundingClientRect();
+    const center = rect.left + rect.width / 2 - box.left;
+    preview.style.left = `${Math.min(Math.max(center - preview.offsetWidth / 2, 0), box.width - preview.offsetWidth)}px`;
+    preview.style.top = `${track.top - box.top - preview.offsetHeight - 12}px`;
+    preview.classList.add("show");
+  }
+
+  function hidePreview() {
+    const preview = $(".vt-preview", timelineBox);
+    if (preview) preview.classList.remove("show");
+  }
+
+  function updatePlayhead() {
+    const progress = $(".vt-progress", timelineBox);
+    const time = video.currentTime || 0;
+    const started = time > 0.01 || !video.paused;
+    const share = Math.min(100, (time / active.duration_s) * 100);
+    progress.style.width = `${share}%`;
+    $(".vt-playhead", timelineBox).style.left = `${share}%`;
+    timelineBox.classList.toggle("started", started);
+    const inside = (index) => started && time >= active.segments[index].start && time < active.segments[index].end;
+    $$(".vt-seg", timelineBox).forEach((button, index) => button.classList.toggle("active", inside(index)));
+    $$(".wt-card", worldSection).forEach((card, index) => card.classList.toggle("playing", inside(index)));
+    $$(".vt-chip", timelineBox).forEach((chip) =>
+      chip.classList.toggle("near", started && Math.abs(time - Number(chip.dataset.at)) < 1.5),
+    );
+  }
+
+  let frameRequest = 0;
+  const animate = () => {
+    updatePlayhead();
+    frameRequest = video.paused ? 0 : window.requestAnimationFrame(animate);
+  };
+  video.addEventListener("play", () => {
+    if (!frameRequest) frameRequest = window.requestAnimationFrame(animate);
+  });
+  ["timeupdate", "seeked", "loadedmetadata", "pause", "emptied"].forEach((name) =>
+    video.addEventListener(name, updatePlayhead),
+  );
+
+  function renderWorld() {
+    const inner = $("#worldTrack");
+    const row = h("div", { class: "wt-row" });
+    segments.forEach((seg, index) => {
+      const room = roomOf(seg.room);
+      const visit = `${ORDINAL[seg.visit]} visit`;
+      row.append(
+        h(
+          "button",
+          {
+            type: "button",
+            class: `wt-card${seg.visit > 1 ? " revisit" : ""}`,
+            style: `${roomStyle(seg.room)}; --grow: ${seg.end - seg.start}`,
+            "aria-label": `${room.label}, ${visit.toLowerCase()}, world time ${clock(seg.start)} to ${clock(seg.end)}`,
+            onclick: () => seekFilm(seg.start + 0.02),
+          },
+          h(
+            "span",
+            { class: "wt-media" },
+            h("img", { src: seg.thumb, alt: `${room.label}, ${visit.toLowerCase()}`, width: 640, height: 360, loading: "lazy", decoding: "async" }),
+            h("span", { class: "wt-index" }, String(index + 1).padStart(2, "0")),
+            seg.visit > 1 ? h("span", { class: "again" }, "revisit") : null,
+          ),
+          h(
+            "span",
+            { class: "wt-body" },
+            h("strong", null, room.label),
+            h("span", { class: "wt-time" }, `${clock(seg.start)} – ${clock(seg.end)}`),
+          ),
+        ),
+      );
+    });
+    const nodes = segments.slice(1).map((seg) => h("span", { class: "wt-node", title: `World-state handoff at ${clock(seg.start)}` }, icon("handoff")));
+    const links = segments.slice(1).map(() => h("span", { class: "wt-link", "aria-hidden": "true" }));
+    const axis = h("div", { class: "wt-axis" }, h("span", { class: "wt-axis-label" }, "World time"));
+    inner.replaceChildren(row, ...links, ...nodes, axis);
+    new ResizeObserver(layoutWorld).observe(inner);
+    watchScroll(inner.parentElement);
+  }
+
+  function layoutWorld() {
+    const inner = $("#worldTrack");
+    const cards = $$(".wt-card", inner);
+    const axis = $(".wt-axis", inner);
+    const middle = cards[0].offsetTop + $(".wt-media", cards[0]).offsetHeight / 2;
+    const gap = (index) => (cards[index - 1].offsetLeft + cards[index - 1].offsetWidth + cards[index].offsetLeft) / 2;
+    $$(".wt-node", inner).forEach((node, index) => {
+      node.style.left = `${gap(index + 1)}px`;
+      node.style.top = `${middle}px`;
+    });
+    const linkTop = middle + 14;
+    const linkBottom = axis.offsetTop + 4;
+    $$(".wt-link", inner).forEach((link, index) => {
+      link.style.left = `${gap(index + 1)}px`;
+      link.style.top = `${linkTop}px`;
+      link.style.height = `${Math.max(0, linkBottom - linkTop)}px`;
+    });
+    $$(".wt-tick", axis).forEach((tick) => tick.remove());
+    const last = cards[cards.length - 1];
+    const ticks = [{ x: 0, time: segments[0].start, kind: "first" }];
+    for (let index = 1; index < cards.length; index += 1) ticks.push({ x: gap(index), time: segments[index].start, kind: "handoff" });
+    ticks.push({ x: last.offsetLeft + last.offsetWidth, time: segments[segments.length - 1].end, kind: "last" });
+    ticks.forEach(({ x, time, kind }) => axis.append(h("span", { class: `wt-tick ${kind}`, style: `left: ${x}px` }, clock(time))));
+  }
+
+  function revisitCard(revisit) {
+    const seg = segments[revisit.segment];
+    const room = roomOf(revisit.room);
+    const still = (kind, label, item, time) =>
+      h(
+        kind === "projection" ? "div" : "button",
+        {
+          type: kind === "projection" ? null : "button",
+          class: `rc-shot ${kind}${kind === "projection" ? " static" : ""}`,
+          onclick: kind === "projection" ? null : () => seekFilm(time),
+        },
+        h("span", { class: "frame" }, h("img", { src: item.img, alt: `${room.label}: ${label.toLowerCase()}`, width: 960, height: 540, loading: "lazy", decoding: "async" })),
+        h("span", { class: "cap" }, h("b", null, label, time === null ? null : h("time", null, clock(time))), h("span", null, item.note)),
+      );
+    return h(
+      "article",
+      { class: "revisit-card", style: roomStyle(revisit.room) },
+      h("div", { class: "rc-kicker" }, h("i"), `${room.label} · ${ORDINAL[seg.visit]} visit`, h("time", null, `${clock(seg.start)}–${clock(seg.end)}`)),
+      h("h3", { class: "rc-title" }, revisit.headline),
+      h(
+        "div",
+        { class: "rc-strip" },
+        still("left", "When he left", revisit.left, revisit.left.t),
+        h("span", { class: "rc-arrow" }, icon("arrow")),
+        still("projection", "Stored world", { img: revisit.projection.img, note: "Point cloud rendered from the new camera" }, null),
+        h("span", { class: "rc-arrow" }, icon("arrow")),
+        still("found", "On return", revisit.found, revisit.found.t),
+      ),
+    );
+  }
+
+  function renderRevisits() {
+    $("#worldSlides").append(...DATA.revisits.map((revisit) => h("div", { class: "cx-slide revisit-slide" }, revisitCard(revisit))));
+  }
+
+  const lazyVideos = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const node = entry.target;
+        node.poster = node.dataset.poster;
+        node.src = node.dataset.src;
+        lazyVideos.unobserve(node);
+      });
+    },
+    { rootMargin: "300px 0px" },
+  );
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const pad2 = (value) => String(value).padStart(2, "0");
+  const decks = [];
+
+  function markOverflow(node) {
+    new ResizeObserver(() => node.classList.toggle("x-scroll", node.scrollWidth > node.clientWidth + 1)).observe(node);
+  }
+
+  function canScrollAlong(target, stop, direction) {
+    for (let node = target; node && node !== stop; node = node.parentElement) {
+      const overflow = getComputedStyle(node).overflowX;
+      if ((overflow !== "auto" && overflow !== "scroll") || node.scrollWidth <= node.clientWidth + 1) continue;
+      if (direction > 0 ? node.scrollLeft + node.clientWidth < node.scrollWidth - 1 : node.scrollLeft > 0) return true;
+    }
+    return false;
+  }
+
+  // 只有当前幻灯片里的视频交给 lazyVideos，离开的幻灯片停止观察并暂停播放
+  function wakeSlide(slide) {
+    $$("video[data-src]", slide).forEach((player) => {
+      if (!player.getAttribute("src")) lazyVideos.observe(player);
+    });
+  }
+
+  function sleepSlide(slide) {
+    $$("video", slide).forEach((player) => {
+      lazyVideos.unobserve(player);
+      if (!player.paused) player.pause();
+    });
+  }
+
+  function deckTab(kicker, title, number, thumb) {
+    return h(
+      "button",
+      { type: "button", class: "cx-tab" },
+      thumb,
+      h("span", { class: "cx-tab-text" }, h("small", null, h("b", null, number), kicker), h("span", null, title)),
+    );
+  }
+
+  function deck(root, tabs, labels, { sticky = false } = {}) {
+    const name = root.id;
+    const bar = $(".cx-bar", root);
+    const tablist = $("[role='tablist']", bar);
+    const prev = $(".cx-prev", bar);
+    const next = $(".cx-next", bar);
+    const count = $(".cx-count", bar);
+    const progress = $(".cx-progress", bar);
+    const viewport = $(".cx-viewport", root);
+    const track = $(".cx-track", viewport);
+    const status = $(".cx-status", root);
+    const slides = [...track.children];
+    const total = slides.length;
+    if (!total || tabs.length !== total || labels.length !== total) {
+      throw new Error(`${name}: ${total} slides, ${tabs.length} tabs, ${labels.length} labels`);
+    }
+    let index = -1;
+    let offset = 0;
+    let drag = null;
+    let settle = 0;
+    let swallowClick = false;
+
+    prev.append(icon("chevron"));
+    next.append(icon("chevron"));
+    progress.style.setProperty("--n", total);
+    tabs.forEach((tab, i) => {
+      tab.id = `${name}-tab-${i + 1}`;
+      tab.setAttribute("role", "tab");
+      tab.setAttribute("aria-controls", `${name}-slide-${i + 1}`);
+      tab.addEventListener("click", () => go(i));
+      slides[i].id = `${name}-slide-${i + 1}`;
+      slides[i].setAttribute("role", "tabpanel");
+      slides[i].setAttribute("aria-roledescription", "slide");
+      slides[i].setAttribute("aria-labelledby", tab.id);
+    });
+    tablist.replaceChildren(...tabs);
+    watchScroll(tablist);
+    $$(".world-scroll", viewport).forEach(markOverflow);
+
+    function place(animate) {
+      const slide = slides[index];
+      offset = slide.offsetLeft;
+      track.classList.toggle("instant", !animate);
+      track.style.transform = `translate3d(${-offset}px, 0, 0)`;
+      viewport.style.height = `${slide.offsetHeight}px`;
+      if (!animate) {
+        // 先让无动画的位置生效，再恢复过渡
+        void track.offsetWidth;
+        track.classList.remove("instant");
+      }
+    }
+
+    function showTab(tab) {
+      if (tablist.scrollWidth <= tablist.clientWidth + 1) return;
+      const left = tab.offsetLeft - (tablist.clientWidth - tab.offsetWidth) / 2;
+      tablist.scrollTo({ left: Math.max(0, left), behavior: reduceMotion.matches ? "auto" : "smooth" });
+    }
+
+    function keepInView() {
+      if (viewport.getBoundingClientRect().top >= navHeight() + (sticky ? bar.offsetHeight : 0)) return;
+      window.scrollTo({ top: window.scrollY + root.getBoundingClientRect().top - navHeight() - 12, behavior: reduceMotion.matches ? "auto" : "smooth" });
+    }
+
+    function go(target, { focusTab = false } = {}) {
+      const to = Math.min(total - 1, Math.max(0, target));
+      if (to === index) {
+        place(true);
+        return;
+      }
+      const from = index;
+      const focusInside = from >= 0 && slides[from].contains(document.activeElement);
+      index = to;
+      slides.forEach((slide, i) => {
+        slide.setAttribute("aria-hidden", String(i !== to));
+        slide.inert = i !== to;
+      });
+      tabs.forEach((tab, i) => {
+        tab.setAttribute("aria-selected", String(i === to));
+        tab.tabIndex = i === to ? 0 : -1;
+      });
+      prev.setAttribute("aria-disabled", String(to === 0));
+      next.setAttribute("aria-disabled", String(to === total - 1));
+      count.replaceChildren(h("b", null, pad2(to + 1)), ` / ${pad2(total)}`);
+      progress.style.setProperty("--i", to);
+      wakeSlide(slides[to]);
+      if (from < 0) {
+        place(false);
+        return;
+      }
+      sleepSlide(slides[from]);
+      status.textContent = `${to + 1} of ${total}: ${labels[to]}`;
+      root.style.setProperty("--cx-time", `${Math.min(0.55 + 0.07 * (Math.abs(to - from) - 1), 0.8)}s`);
+      root.classList.add("moving");
+      window.clearTimeout(settle);
+      settle = window.setTimeout(() => root.classList.remove("moving"), 900);
+      place(true);
+      showTab(tabs[to]);
+      if (focusTab || focusInside) tabs[to].focus({ preventScroll: true });
+      keepInView();
+    }
+
+    prev.addEventListener("click", () => go(index - 1));
+    next.addEventListener("click", () => go(index + 1));
+
+    root.addEventListener("keydown", (event) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      const onTab = tabs.includes(event.target);
+      if (onTab && (event.key === "Home" || event.key === "End")) {
+        event.preventDefault();
+        go(event.key === "Home" ? 0 : total - 1, { focusTab: true });
+        return;
+      }
+      const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+      if (!step) return;
+      if (!onTab && (event.target.closest("video, input, select, textarea") || canScrollAlong(event.target, root, step))) return;
+      event.preventDefault();
+      go(index + step, { focusTab: onTab });
+    });
+
+    // 触摸与触控笔拖动：横向位移跟随手指，松手后按距离或速度决定翻页
+    viewport.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" || !event.isPrimary || event.target.closest("video, .x-scroll")) return;
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, dx: 0, moved: false, trail: [[event.timeStamp, event.clientX]] };
+    });
+    viewport.addEventListener("pointermove", (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const dx = event.clientX - drag.x;
+      const dy = event.clientY - drag.y;
+      if (!drag.moved) {
+        if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) {
+          drag = null;
+          return;
+        }
+        if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+        drag.moved = true;
+        viewport.setPointerCapture(event.pointerId);
+        track.classList.add("dragging");
+      }
+      drag.dx = dx;
+      drag.trail.push([event.timeStamp, event.clientX]);
+      if (drag.trail.length > 6) drag.trail.shift();
+      const edge = (index === 0 && dx > 0) || (index === total - 1 && dx < 0);
+      track.style.transform = `translate3d(${-offset + (edge ? dx / 3 : dx)}px, 0, 0)`;
+    });
+    const release = (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const { moved, dx, trail } = drag;
+      drag = null;
+      if (!moved) return;
+      track.classList.remove("dragging");
+      swallowClick = true;
+      window.setTimeout(() => {
+        swallowClick = false;
+      }, 400);
+      const [startTime, startX] = trail[0];
+      const [endTime, endX] = trail[trail.length - 1];
+      const speed = endTime > startTime ? (endX - startX) / (endTime - startTime) : 0;
+      const flick = Math.abs(dx) > viewport.clientWidth * 0.18 || (Math.abs(dx) > 40 && Math.abs(speed) > 0.35);
+      if (event.type === "pointerup" && flick) go(index + (dx < 0 ? 1 : -1));
+      else place(true);
+    };
+    viewport.addEventListener("pointerup", release);
+    viewport.addEventListener("pointercancel", release);
+    viewport.addEventListener(
+      "click",
+      (event) => {
+        if (!swallowClick) return;
+        swallowClick = false;
+        event.preventDefault();
+        event.stopPropagation();
+      },
+      true,
+    );
+
+    // 内部可横向滚动的区域（窄屏时间轴）由浏览器原生滚动；已经滚到尽头时继续横扫则翻页
+    let edgeSwipe = null;
+    viewport.addEventListener(
+      "touchstart",
+      (event) => {
+        const scroller = event.touches.length === 1 ? event.target.closest(".x-scroll") : null;
+        edgeSwipe = scroller && viewport.contains(scroller) ? { scroller, x: event.touches[0].clientX, y: event.touches[0].clientY, left: scroller.scrollLeft } : null;
+      },
+      { passive: true },
+    );
+    viewport.addEventListener("touchcancel", () => {
+      edgeSwipe = null;
+    });
+    viewport.addEventListener(
+      "touchend",
+      (event) => {
+        if (!edgeSwipe) return;
+        const { scroller, x, y, left } = edgeSwipe;
+        edgeSwipe = null;
+        const dx = event.changedTouches[0].clientX - x;
+        const dy = event.changedTouches[0].clientY - y;
+        if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || Math.abs(scroller.scrollLeft - left) >= 1) return;
+        const step = dx < 0 ? 1 : -1;
+        if (!canScrollAlong(scroller, viewport, step)) go(index + step);
+      },
+      { passive: true },
+    );
+
+    // 触控板横向滑动：一次手势只翻一页，手势停止 240ms 后才接受下一次
+    let wheelSum = 0;
+    let wheelBusy = false;
+    let wheelNative = false;
+    let wheelQuiet = 0;
+    viewport.addEventListener(
+      "wheel",
+      (event) => {
+        const scale = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewport.clientWidth : 1;
+        const dx = event.deltaX * scale;
+        if (event.ctrlKey || Math.abs(dx) <= Math.abs(event.deltaY * scale)) return;
+        window.clearTimeout(wheelQuiet);
+        wheelQuiet = window.setTimeout(() => {
+          wheelSum = 0;
+          wheelBusy = false;
+          wheelNative = false;
+        }, 240);
+        if (wheelNative || canScrollAlong(event.target, viewport, Math.sign(dx))) {
+          wheelNative = true;
+          return;
+        }
+        event.preventDefault();
+        if (wheelBusy) return;
+        wheelSum += dx;
+        if (Math.abs(wheelSum) < 60) return;
+        wheelBusy = true;
+        go(index + Math.sign(wheelSum));
+      },
+      { passive: false },
+    );
+
+    const resize = new ResizeObserver(() => {
+      if (index < 0 || (drag && drag.moved)) return;
+      const slide = slides[index];
+      if (slide.offsetLeft !== offset) place(false);
+      else viewport.style.height = `${slide.offsetHeight}px`;
+    });
+    resize.observe(viewport);
+    slides.forEach((slide) => resize.observe(slide));
+
+    // 吸顶的导航条：贴在页面顶栏下面，记录高度供 ATAS 卡片吸附，离开原位时加上背景
+    if (sticky) {
+      new ResizeObserver(() => root.style.setProperty("--bar-h", `${bar.offsetHeight}px`)).observe(bar);
+      const sentinel = $(".cx-sentinel", root);
+      const markStuck = () => bar.classList.toggle("stuck", sentinel.getBoundingClientRect().top < navHeight());
+      window.addEventListener("scroll", markStuck, { passive: true });
+      window.addEventListener("resize", markStuck);
+      markStuck();
+    }
+
+    go(0);
+    const api = {
+      viewport,
+      go: (target) => go(target),
+      get index() {
+        return index;
+      },
+    };
+    decks.push(api);
+    return api;
+  }
+
+  // 焦点不在任何控件上时，左右方向键翻动视口中露出最多的那一组幻灯片
+  function deckKeys(event) {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+    const focus = document.activeElement;
+    if (!step || (focus && focus !== document.body && focus !== document.documentElement)) return;
+    const shown = (item) => {
+      const rect = item.viewport.getBoundingClientRect();
+      return Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+    };
+    const target = decks.reduce((best, item) => (shown(item) > shown(best) ? item : best));
+    if (shown(target) < Math.min(240, window.innerHeight * 0.3)) return;
+    event.preventDefault();
+    target.go(target.index + step);
+  }
+
+  function seekCell(player, time, item) {
+    const card = player.closest(".method-card");
+    $$(".ev-item", card).forEach((node) => node.classList.toggle("current", node === item));
+    if (!player.getAttribute("src")) {
+      player.poster = player.dataset.poster;
+      player.src = player.dataset.src;
+      lazyVideos.unobserve(player);
+    }
+    const rect = player.getBoundingClientRect();
+    if (rect.top < navHeight() || rect.bottom > window.innerHeight) player.scrollIntoView({ behavior: "smooth", block: "center" });
+    const go = () => {
+      player.currentTime = Math.min(Math.max(0, time), Math.max(0, player.duration - 0.05));
+      player.controls = true;
+      player.play().catch(ignoreAbort);
+    };
+    if (player.readyState >= 1) go();
+    else {
+      player.preload = "metadata";
+      player.addEventListener("loadedmetadata", go, { once: true });
+      if (player.networkState !== HTMLMediaElement.NETWORK_LOADING) player.load();
+    }
+  }
+
+  const SVGNS = "http://www.w3.org/2000/svg";
+
+  function markLayer(boxes) {
+    if (!boxes) return null;
+    const svg = document.createElementNS(SVGNS, "svg");
+    svg.setAttribute("class", "ev-marks");
+    svg.setAttribute("viewBox", "0 0 1 1");
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("aria-hidden", "true");
+    boxes.forEach(([x1, y1, x2, y2]) => {
+      const ellipse = document.createElementNS(SVGNS, "ellipse");
+      ellipse.setAttribute("cx", String((x1 + x2) / 2));
+      ellipse.setAttribute("cy", String((y1 + y2) / 2));
+      ellipse.setAttribute("rx", String(((x2 - x1) / 2) * 1.2));
+      ellipse.setAttribute("ry", String(((y2 - y1) / 2) * 1.2));
+      svg.append(ellipse);
+    });
+    return svg;
+  }
+
+  function evidenceItem(item, player) {
+    const marks = item.marks || {};
+    const shot = (label, time, src, boxes) =>
+      h(
+        "button",
+        {
+          type: "button",
+          class: "ev-shot",
+          "aria-label": `${label}, ${clock(time)}: ${item.title}`,
+          onclick: () => seekCell(player, time, details),
+        },
+        h("img", { src, alt: `${label}: ${item.title}`, width: 640, height: 360, loading: "lazy", decoding: "async" }),
+        markLayer(boxes),
+        h("em", null, h("b", null, label), clock(time)),
+      );
+    const details = h(
+      "details",
+      { class: "ev-item" },
+      h(
+        "summary",
+        null,
+        h("time", null, clock(item.time_s)),
+        h("strong", null, item.title),
+        h("span", { class: "ev-toggle" }, "Compare"),
+      ),
+      h(
+        "div",
+        { class: "ev-compare" },
+        shot("Before", item.compare_time_s, item.compare_thumbnail, marks.compare_thumbnail),
+        shot("After", item.time_s, item.thumbnail, marks.thumbnail),
+      ),
+    );
+    return details;
+  }
+
+  function evidenceList(data, player, ours) {
+    const items = data.evidence.items;
+    return h(
+      "div",
+      { class: `evidence ${ours ? "strength" : "issue"}` },
+      h("div", { class: "ev-heading" }, ours ? "Strength Points" : "Failure Points", h("span", null, items.length)),
+      ...items.map((item) => evidenceItem(item, player)),
+    );
+  }
+
+  function methodCell(row, method) {
+    const data = row.cells[method.key];
+    const ours = method.key === "ours";
+    const player = h("video", {
+      playsinline: true,
+      muted: true,
+      preload: "none",
+      "data-src": data.src,
+      "data-poster": data.poster,
+      "aria-label": `${method.label}: ${row.title}`,
+    });
+    return h(
+      "article",
+      { class: `method-card${ours ? " ours" : ""}` },
+      h("div", { class: "media" }, player, playOverlay(player, `Play ${method.label}: ${row.title}`)),
+      h(
+        "div",
+        { class: "method-body" },
+        h(
+          "div",
+          { class: "method-top" },
+          h("h4", null, method.label, ours ? h("span", { class: "ours-badge" }, "ATAS") : null),
+          h("span", { class: "cell-meta" }, clock(data.seconds)),
+        ),
+        evidenceList(data, player, ours),
+      ),
+    );
+  }
+
+  const gridMethods = [...DATA.methods.filter((m) => m.key === "ours"), ...DATA.methods.filter((m) => m.key !== "ours")];
+
+  function routeChips(row) {
+    const route = h("div", { class: "route", "aria-label": "Location segments" });
+    row.route.forEach((stop, index) => {
+      if (index) route.append(h("i", null, icon("chevron")));
+      route.append(
+        h(
+          "span",
+          { class: stop.again ? "again-stop" : null, title: stop.again ? "Return visit" : null },
+          stop.again ? icon("revisit", "rv-icon") : null,
+          stop.place,
+        ),
+      );
+    });
+    route.append(h("span", { class: "shots" }, `${row.shots} shots`));
+    return route;
+  }
+
+  function comparisonSlide(row) {
+    const [ours, ...others] = gridMethods.map((method) => methodCell(row, method));
+    return h(
+      "div",
+      { class: "cx-slide" },
+      h(
+        "div",
+        { class: "comparison-stage" },
+        h(
+          "div",
+          { class: "comparison-summary" },
+          h("div", null, h("h3", null, h("small", null, `Example ${pad2(row.index)}`), row.title), h("p", null, row.premise)),
+          routeChips(row),
+        ),
+        ours,
+        h("div", { class: "comparison-others" }, ...others),
+      ),
+    );
+  }
+
+  function renderComparison() {
+    $("#comparisonSlides").replaceChildren(...DATA.comparison.map(comparisonSlide));
+    const tabs = DATA.comparison.map((row) => h("button", { type: "button", class: "comparison-tab" }, h("small", null, pad2(row.index)), row.title));
+    deck($("#comparisonDeck"), tabs, DATA.comparison.map((row) => row.title), { sticky: true });
+  }
+
+  function renderWorldDeck() {
+    const title = "Three Rooms, Five Visits";
+    const mini = h(
+      "span",
+      { class: "cx-thumb wt-mini", "aria-hidden": "true" },
+      ...segments.map((seg) => h("i", { style: `${roomStyle(seg.room)}; flex-grow: ${seg.end - seg.start}` })),
+    );
+    const tabs = [
+      deckTab("World time", title, "01", mini),
+      ...DATA.revisits.map((revisit, index) =>
+        deckTab(
+          roomOf(revisit.room).label,
+          revisit.headline,
+          pad2(index + 2),
+          h("span", { class: "cx-thumb" }, h("img", { src: revisit.found.img, alt: "", width: 960, height: 540, loading: "lazy", decoding: "async" })),
+        ),
+      ),
+    ];
+    deck($("#worldDeck"), tabs, [title, ...DATA.revisits.map((revisit) => revisit.headline)]);
+  }
+
+
+  // 标题区背景：五条长剧本的 ATAS 成片片段轮流播放，每段结尾前淡入下一段
+  const MASTHEAD_CLIPS = ["02_saturday_laundry", "01_dye_works", "03_winter_bath", "04_paddling_pool", "05_cabin_fire"].map(
+    (name) => ({ src: `assets/hero/${name}.mp4`, poster: `assets/hero/${name}.jpg` }),
+  );
+  const MASTHEAD_FADE = 1.2;
+
+  function startMastheadReel() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const players = $$(".masthead-video");
+    let [current, next] = players;
+    let index = 0;
+    let fading = false;
+    let visible = true;
+    const load = (player, clip) => {
+      player.poster = clip.poster;
+      player.src = clip.src;
+    };
+    const play = (player) =>
+      player.play().catch((error) => {
+        // 浏览器不允许自动播放时停在片段首帧
+        if (error.name !== "NotAllowedError") ignoreAbort(error);
+      });
+    const advance = () => {
+      if (fading) return;
+      fading = true;
+      index = (index + 1) % MASTHEAD_CLIPS.length;
+      next.currentTime = 0;
+      if (visible) play(next);
+      next.classList.add("active");
+      current.classList.remove("active");
+      window.setTimeout(() => {
+        current.pause();
+        load(current, MASTHEAD_CLIPS[(index + 1) % MASTHEAD_CLIPS.length]);
+        [current, next] = [next, current];
+        fading = false;
+      }, MASTHEAD_FADE * 1000);
+    };
+    players.forEach((player) => {
+      player.addEventListener("timeupdate", () => {
+        if (player === current && player.duration - player.currentTime < MASTHEAD_FADE) advance();
+      });
+      player.addEventListener("ended", () => {
+        if (player === current) advance();
+      });
+    });
+    load(current, MASTHEAD_CLIPS[0]);
+    load(next, MASTHEAD_CLIPS[1]);
+    // 标题区离开视口时暂停，回来时继续播放正在显示的那一段
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) play($(".masthead-video.active"));
+      else players.forEach((player) => player.pause());
+    }).observe($(".masthead"));
+  }
+
+  startMastheadReel();
+  frame.append(playOverlay(video, "Play the main video"));
+  renderWorld();
+  renderRevisits();
+  renderWorldDeck();
+  renderComparison();
+  document.addEventListener("keydown", deckKeys);
+  loadHero();
+  new ResizeObserver(() => {
+    layoutChips();
+    fitLabels();
+  }).observe(timelineBox);
+
+  const reveal = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("in");
+        reveal.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.06, rootMargin: "0px 0px -40px 0px" },
+  );
+  $$(".reveal").forEach((node) => reveal.observe(node));
+
+  // 顶栏把页面分成 Home、Technical Details 和 Interactive Console 三部分，按地址里的 # 显示目标所在的那一部分
+  const views = $$(".page-view");
+  // Interactive Console 第一次显示时才加载它的脚本、点云和视频；之后每次切换部分都通知它，离开时它暂停视频
+  let consoleLoad = null;
+  function announceView(id) {
+    if (id === "console" && !consoleLoad) {
+      consoleLoad = import("./assets/console/console.js?v=4").then((module) => module.mountConsole($("#console")));
+    }
+    document.dispatchEvent(new CustomEvent("atas:view", { detail: id }));
+  }
+  const masthead = $(".masthead");
+  const paintNav = () =>
+    siteNav.classList.toggle("solid", $("#home").hidden || window.scrollY > masthead.offsetHeight - navHeight() * 1.5);
+  // 跳到某一节之后，上方的封面、图片和幻灯片还会改变高度；在用户自己操作之前，版面每次变化都重新对准这一节
+  let releaseAnchor = null;
+  function holdAnchor(target) {
+    const observer = new ResizeObserver(() => target.scrollIntoView({ behavior: "instant" }));
+    const inputs = ["wheel", "touchstart", "keydown", "pointerdown"];
+    const release = () => {
+      observer.disconnect();
+      inputs.forEach((type) => window.removeEventListener(type, release));
+      releaseAnchor = null;
+    };
+    observer.observe(target.closest(".page-view"));
+    inputs.forEach((type) => window.addEventListener(type, release, { passive: true }));
+    releaseAnchor = release;
+  }
+
+  // 切换部分或首次打开时直接跳到目标；同一部分里的锚点交给浏览器自己平滑滚动
+  function route(initial) {
+    if (releaseAnchor) releaseAnchor();
+    const id = decodeURIComponent(location.hash.slice(1));
+    const target = (id && document.getElementById(id)) || views[0];
+    const view = target.closest(".page-view");
+    if (!view) throw new Error(`#${id} is outside the page views`);
+    const switched = view.hidden;
+    views.forEach((node) => {
+      node.hidden = node !== view;
+    });
+    $$(".site-nav-links a").forEach((link) => {
+      const current = link.dataset.view === view.id;
+      link.classList.toggle("active", current);
+      if (current) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+    if (switched || initial === true) {
+      if (target === view) window.scrollTo({ top: 0, behavior: "instant" });
+      else holdAnchor(target);
+    }
+    paintNav();
+    announceView(view.id);
+  }
+  window.addEventListener("hashchange", () => route(false));
+  // 加载期间浏览器自己也会跳到锚点，先关掉平滑滚动让它直接完成，加载完再恢复
+  document.documentElement.style.scrollBehavior = "auto";
+  window.addEventListener(
+    "load",
+    () => requestAnimationFrame(() => document.documentElement.style.removeProperty("scroll-behavior")),
+    { once: true },
+  );
+  window.addEventListener("scroll", paintNav, { passive: true });
+  $(".to-top").addEventListener("click", (event) => {
+    event.preventDefault();
+    window.scrollTo({ top: 0, behavior: reduceMotion.matches ? "auto" : "smooth" });
+  });
+  route(true);
+
+  // BibTeX 一键复制，按钮短暂显示 Copied
+  const citationText = $("#citationText");
+  const copyButton = $(".citation-copy");
+  let copyReset = 0;
+  copyButton.addEventListener("click", () =>
+    navigator.clipboard.writeText(citationText.textContent).then(() => {
+      copyButton.textContent = "Copied";
+      copyButton.classList.add("done");
+      window.clearTimeout(copyReset);
+      copyReset = window.setTimeout(() => {
+        copyButton.textContent = "Copy";
+        copyButton.classList.remove("done");
+      }, 1800);
+    }),
+  );
+})();
+</script>
+  </body>
+</html>

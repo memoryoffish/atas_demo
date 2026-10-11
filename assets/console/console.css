@@ -1,0 +1,637 @@
+/* Interactive Console：照 appendix_review 报告页的样式——深色底、带 1px 边框的卡片、顶部一条标题栏（标题、世界名、
+   小药丸按钮）、两栏各带一条 3px 色条；左栏视频，右栏整套房子的点云，下面一张时间线卡片 */
+#console {
+  --c-bg: #111214;
+  --c-card: #1a1c1f;
+  --c-line: #2a2d31;
+  --c-fg: #e6e6e6;
+  --c-dim: #9aa0a6;
+  --c-green: #5ecb8a;
+  --c-head: #0c0d0f;
+  background: var(--c-bg);
+  color: var(--c-fg);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+.console-main {
+  margin: 0 auto;
+  max-width: 1480px;
+  padding: calc(var(--nav-h) + 14px) 18px 40px;
+}
+
+.console-strip {
+  background: var(--c-head);
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  padding: 10px 18px;
+}
+
+.console-title-row {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+}
+
+.console-strip h1 {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.console-meta {
+  color: var(--c-dim);
+  font-size: 13px;
+}
+
+.console-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.console-chips button {
+  appearance: none;
+  background: none;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  color: var(--c-fg);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 2px 8px;
+}
+
+.console-chips button:hover {
+  border-color: var(--c-green);
+}
+
+.console-chips button[aria-pressed="true"] {
+  background: rgba(94, 203, 138, 0.12);
+  border-color: var(--c-green);
+  color: #fff;
+}
+
+.console-card {
+  background: var(--c-card);
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.console-strip + .console-card,
+.console-card + .console-card {
+  margin-top: 14px;
+}
+
+/* 两栏：左视频、右点云。视频栏高度固定（大画面和小画面都留好位置），点云栏拉到同样高度 */
+.console-stage {
+  align-items: stretch;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  position: relative;
+}
+
+.console-col {
+  border-top: 3px solid var(--col-c, var(--c-line));
+  min-width: 0;
+  padding-top: 10px;
+}
+
+.console-world {
+  border-image: var(--lanes-bar) 1;
+  border-image-width: 3px 0 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.console-viewer {
+  aspect-ratio: 16 / 10;
+  background: radial-gradient(120% 90% at 50% 0%, rgba(97, 165, 255, 0.07), transparent 60%), #0c0d0f;
+  border-radius: 6px;
+  flex: 1 1 auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.console-canvas {
+  cursor: grab;
+  display: block;
+  height: 100%;
+  inset: 0;
+  outline: none;
+  position: absolute;
+  touch-action: none;
+  width: 100%;
+}
+
+.console-canvas:active {
+  cursor: grabbing;
+}
+
+.console-canvas.pick {
+  cursor: pointer;
+}
+
+.console-canvas:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(94, 203, 138, 0.8);
+}
+
+.console-loading {
+  align-items: center;
+  color: var(--c-dim);
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  gap: 10px;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+}
+
+.console-loading[hidden] {
+  display: none;
+}
+
+.console-loading b {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  display: block;
+  height: 3px;
+  overflow: hidden;
+  position: relative;
+  width: 180px;
+}
+
+.console-loading b::after {
+  background: var(--c-green);
+  content: "";
+  inset: 0 auto 0 0;
+  position: absolute;
+  width: var(--progress, 0%);
+}
+
+.console-pick-label {
+  background: rgba(12, 13, 15, 0.9);
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  color: var(--c-fg);
+  font-size: 12px;
+  left: 0;
+  padding: 2px 8px;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+  z-index: 3;
+}
+
+.console-pick-label[hidden] {
+  display: none;
+}
+
+/* 视频：选中的角度放大，同一时刻的其他角度放成同步的小图 */
+.console-tile {
+  --c: #fff;
+  appearance: none;
+  background: #0c0d0f;
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  color: var(--c-fg);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  text-align: left;
+  width: 100%;
+}
+
+.console-tile:hover,
+.console-tile:focus-visible {
+  border-color: var(--c);
+}
+
+.console-tile video {
+  aspect-ratio: 16 / 9;
+  background: #000;
+  display: block;
+  object-fit: cover;
+  width: 100%;
+}
+
+.console-tile-cap {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  min-width: 0;
+  padding: 6px 10px 7px;
+}
+
+.console-tile-cap strong {
+  align-items: center;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.console-tile-cap strong::before {
+  background: var(--c);
+  border-radius: 50%;
+  content: "";
+  height: 8px;
+  width: 8px;
+}
+
+.console-tile-where {
+  color: var(--c-dim);
+  font-size: 12px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.console-tile-note {
+  color: var(--c-dim);
+  flex-basis: 100%;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* 大画面：看不见的占位（说明取这个世界最长的一段）和真正的大画面叠在同一格里，格子取两者中高的一个 */
+.console-lead {
+  display: grid;
+}
+
+.console-lead > * {
+  align-self: start;
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.console-lead-sizer {
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.console-lead-sizer-video {
+  aspect-ratio: 16 / 9;
+  display: block;
+}
+
+/* 小画面：一行的说明高度固定；小画面区的最小高度由脚本按这个世界同一时刻最多的小画面数算出 */
+.console-thumbs {
+  --thumb-cap: 30px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  margin-top: 8px;
+}
+
+.console-thumbs[hidden] {
+  display: none;
+}
+
+.console-thumbs .console-tile-cap {
+  flex-wrap: nowrap;
+  height: var(--thumb-cap);
+  padding: 4px 8px 5px;
+}
+
+.console-thumbs .console-tile-cap strong {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.console-thumbs .console-tile-where,
+.console-thumbs .console-tile-note {
+  display: none;
+}
+
+.console-arrows {
+  height: 100%;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+}
+
+.console-arrows path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+/* 视频到相机的连线画成虚线 */
+.console-arrows path:not(.head) {
+  stroke-dasharray: 6 6;
+}
+
+.console-arrows .head {
+  stroke: none;
+}
+
+.console-arrows circle {
+  fill: rgba(12, 13, 15, 0.85);
+  stroke-width: 2;
+}
+
+.console-arrows g {
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.9));
+}
+
+/* 时间线卡片上面一行：播放按钮、时钟 */
+.console-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 10px;
+}
+
+.console-play {
+  align-items: center;
+  appearance: none;
+  background: var(--c-green);
+  border: 0;
+  border-radius: 50%;
+  color: #0c0d0f;
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.console-play svg {
+  height: 15px;
+  width: 15px;
+}
+
+.console-clock {
+  color: var(--c-dim);
+  font-family: var(--mono);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.console-clock time {
+  color: var(--c-fg);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* 时间线：左侧每条线（角度）的名字，点一下大画面换成这个角度；右侧一条线一行 */
+.console-lanes {
+  column-gap: 10px;
+  display: grid;
+  grid-template-areas:
+    "labels track"
+    ". ticks";
+  grid-template-columns: 112px minmax(0, 1fr);
+}
+
+.console-lane-labels {
+  display: grid;
+  grid-area: labels;
+  grid-template-rows: repeat(var(--lanes, 1), var(--lane-h, 34px));
+  padding-top: 6px;
+}
+
+.console-lane-labels button {
+  align-items: center;
+  appearance: none;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--c-dim);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  font-size: 12px;
+  gap: 6px;
+  margin: 3px 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.console-lane-labels button:hover {
+  border-color: var(--c-line);
+  color: var(--c-fg);
+}
+
+.console-lane-labels button[aria-pressed="true"] {
+  border-color: var(--c);
+  color: var(--c-fg);
+}
+
+.console-lane-labels i {
+  background: var(--c);
+  border-radius: 50%;
+  flex: none;
+  height: 8px;
+  width: 8px;
+}
+
+.console-track {
+  background: #141619;
+  border: 1px solid var(--c-line);
+  border-radius: 6px;
+  cursor: pointer;
+  grid-area: track;
+  height: calc(var(--lanes, 1) * var(--lane-h, 34px) + 12px);
+  position: relative;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.console-track::before {
+  background: repeating-linear-gradient(180deg, transparent 0 calc(var(--lane-h, 34px) - 1px), rgba(255, 255, 255, 0.05) calc(var(--lane-h, 34px) - 1px) var(--lane-h, 34px));
+  content: "";
+  inset: 6px 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.console-bar {
+  --c: #fff;
+  align-items: center;
+  appearance: none;
+  background: color-mix(in srgb, var(--c) 18%, transparent);
+  border: 0;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 40%, transparent);
+  color: var(--c-fg);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 6px;
+  height: calc(var(--lane-h, 34px) - 8px);
+  margin-left: 1px;
+  overflow: hidden;
+  padding: 0 7px;
+  position: absolute;
+  text-align: left;
+  top: calc(6px + 4px + var(--lane, 0) * var(--lane-h, 34px));
+  white-space: nowrap;
+}
+
+.console-bar::before {
+  background: var(--c);
+  bottom: 0;
+  content: "";
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 3px;
+}
+
+.console-bar strong {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.console-bar.live {
+  background: color-mix(in srgb, var(--c) 34%, transparent);
+}
+
+.console-bar.chosen {
+  box-shadow: inset 0 0 0 2px var(--c);
+}
+
+.console-bar:hover {
+  box-shadow: inset 0 0 0 1px var(--c);
+}
+
+.console-playhead {
+  bottom: -4px;
+  cursor: ew-resize;
+  left: 0;
+  margin-left: -11px;
+  outline: none;
+  position: absolute;
+  top: -8px;
+  touch-action: none;
+  width: 22px;
+  z-index: 2;
+}
+
+.console-playhead::before {
+  background: #fff;
+  bottom: 0;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+  content: "";
+  left: 10px;
+  position: absolute;
+  top: 6px;
+  width: 2px;
+}
+
+.console-playhead::after {
+  background: #fff;
+  border: 3px solid var(--c-card);
+  border-radius: 50%;
+  content: "";
+  height: 14px;
+  left: 4px;
+  position: absolute;
+  top: 0;
+  width: 14px;
+}
+
+.console-playhead:focus-visible::after {
+  box-shadow: 0 0 0 3px rgba(94, 203, 138, 0.9);
+}
+
+.console-ticks {
+  color: var(--c-dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  grid-area: ticks;
+  height: 18px;
+  margin-top: 4px;
+  position: relative;
+}
+
+.console-ticks span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.console-ticks .start {
+  transform: none;
+}
+
+.console-ticks .end {
+  transform: translateX(-100%);
+}
+
+/* 窄屏：视频、点云、时间线上下叠放 */
+@media (max-width: 760px) {
+  .console-main {
+    padding: calc(var(--nav-h) + 10px) 10px 32px;
+  }
+
+  .console-stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .console-viewer {
+    aspect-ratio: 4 / 3;
+  }
+
+  .console-lanes {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .console-lane-labels button {
+    padding: 0 6px;
+  }
+}
+
+@media (max-width: 520px) {
+  .console-strip {
+    padding: 10px 12px;
+  }
+
+  .console-card {
+    padding: 10px;
+  }
+
+  .console-viewer {
+    aspect-ratio: 1 / 1;
+  }
+
+  .console-bar strong {
+    font-size: 10.5px;
+  }
+}
