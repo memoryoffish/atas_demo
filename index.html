@@ -174,15 +174,14 @@ h1 .nowrap {
   padding-left: 0.34em;
 }
 
-/* 标题区大字是 "Any Time, Any Space"，比原来的 ATAS 长，字号相应收小；窄屏在逗号后换成两行 */
-h1 .wordmark {
-  background: none;
-  color: #fff;
-  font-size: clamp(44px, 6.4vw, 96px);
-  letter-spacing: -0.02em;
-  line-height: 1;
-  margin-bottom: 16px;
-  padding-left: 0;
+/* 标题区大字是项目 logo（玻璃胶片图标加 "Any Time, Any Space"）：原图白底深蓝字，
+   assets/brand/logo_dark.webp 去掉了白底、深蓝字改成白色，彩色首字母和图标保持原色 */
+h1 .hero-logo {
+  display: block;
+  height: auto;
+  margin: 0 auto 18px;
+  max-width: 100%;
+  width: clamp(300px, 70vw, 1040px);
 }
 
 h1 .h1-soft {
@@ -2879,7 +2878,7 @@ details.ev-item[open] .ev-toggle {
       </div>
       <div class="masthead-content">
         <h1 class="reveal">
-          <span class="wordmark"><span class="nowrap">Any Time,</span> <span class="nowrap">Any Space</span></span>
+          <img class="hero-logo" src="assets/brand/logo_dark.webp" width="2110" height="475" alt="Any Time, Any Space">
           <span class="h1-soft">A <span class="nowrap">World-State-Centric</span> Framework for Agentic Video Generation</span>
         </h1>
         <div class="authors reveal" aria-label="Authors">
