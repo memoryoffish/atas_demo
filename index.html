@@ -1952,7 +1952,8 @@ details.ev-item[open] .ev-toggle {
   white-space: nowrap;
 }
 
-.main-table tbody + tbody > tr:first-child > * {
+/* 论文表格里的 \midrule 分块：每块一个 tbody，块与块之间画线 */
+.paper-table tbody + tbody > tr:first-child > * {
   border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
 
@@ -3161,7 +3162,7 @@ details.ev-item[open] .ev-toggle {
           <h2 id="abstract-title">Abstract</h2>
         </div>
         <article class="tech-panel reveal">
-          <p class="abstract-text">Long-form agentic video generation requires turning a high-level screenplay into short video shots while preserving the spatial and temporal relationships established by earlier shots. This becomes particularly challenging when a later shot revisits a previously depicted location or portrays an earlier event from a different viewpoint. Existing systems commonly pass prompts, reference images, or generated frames between shots, but these signals do not provide a persistent spatial frame or an explicit index for dynamic events. We introduce <strong>Any Time, Any Space (ATAS)</strong>, which generates shots by projecting a persistent world state into requested views and selectively updates that state with validated observations. This state comprises two complementary memories: a scene memory that accumulates static geometry in a shared coordinate frame, and an event memory that preserves dynamic observations indexed by scene, event identity, and time. A world-state compiler decomposes the screenplay into short-shot requests with explicit spatial and temporal references, enabling the agent to retrieve the relevant scene and event evidence to guide generation. To prevent inconsistencies in generated clips from propagating to subsequent shots, each clip is reconstructed and registered, and its observations enter memory following validation. This separates screenplay decomposition, shot rendering, and state updates, reducing the propagation of unreliable observations. We evaluate ATAS on standard multi-shot benchmarks and controlled protocols for spatial revisit and historical event recapture, with ablations examining scene memory, event memory, and state update checks.</p>
+          <p class="abstract-text">Long-form agentic video generation must turn a screenplay into shots that remain spatially and temporally consistent across nonconsecutive requests. Passing prompts or recent frames between shots does not provide a shared spatial frame for revisiting a scene or a time-indexed record for replaying an earlier event. We present <strong>Any Time, Any Space (ATAS)</strong>, which compiles a screenplay into shot requests with explicit location, camera, and event-time references. Before generation, it retrieves relevant evidence from a scene memory of registered static geometry and an event memory of dynamic observations indexed by scene, event, and time. After generation, ATAS reconstructs and registers the clip. It updates memory only when review and state checks accept the observation, while film delivery remains independent of memory admission. Across four video generators, ATAS improves all reported cross-shot consistency measures and achieves the highest aggregate benchmark score for each backbone. It also outperforms the compared agents and 3D-guided methods on target-image spatial revisit, leads three event-recapture criteria, and receives the highest human ratings on all six criteria.</p>
         </article>
       </section>
 
@@ -3221,7 +3222,7 @@ details.ev-item[open] .ev-toggle {
           <p class="tech-analysis reveal">Figure B traces what happens to one accepted shot. Its static pixels are registered into the shared scene frame and extend the scene memory, while its dynamic frames and masks become a separate event record, indexed by event and source interval and kept unfused with the scene. A later request at a new camera uses only the scene render for a spatial revisit, and both the scene render and the retrieved event record for an event recapture. Keeping the two kinds of evidence apart prevents a visually similar frame from being retrieved when it belongs to the wrong occurrence.</p>
           <div class="table-card full-row reveal" role="region" aria-label="Memory statistics" tabindex="0">
             <table class="paper-table">
-              <caption><span class="paper-tag">Tab. E</span><strong>Memory statistics.</strong> This analysis table reports memory growth and query cost at rollout checkpoints; it is not a sample manifest.</caption>
+              <caption><span class="paper-tag">Tab. E</span><strong>Memory statistics.</strong> This analysis table reports memory growth and query cost at rollout checkpoints. It is not a sample manifest.</caption>
               <thead>
                 <tr><th scope="col">Checkpoint</th><th scope="col">Scene size (×10<sup>6</sup>)</th><th scope="col">Event records</th><th scope="col">Storage (GB)</th><th scope="col">Query and update time (s)</th><th scope="col">Processed shots</th></tr>
               </thead>
@@ -3244,7 +3245,7 @@ details.ev-item[open] .ev-toggle {
         <div class="tech-card-grid">
           <article class="tech-panel tech-card reveal">
             <h3>Standard benchmarks</h3>
-            <p>Official inputs and evaluators of VBench, StoryMem, ViStory-Self, and ViStory-Cross on MiniMax-H3, Wan&nbsp;2.7, HappyHorse&nbsp;1.0, and Wan&nbsp;3.0, against I2V Extension, VGoT, Mora, MovieAgent, and ReCA.</p>
+            <p>Official inputs and evaluators of VBench, ST-Bench, ViStory-Self, and ViStory-Cross on MiniMax-H3, Wan&nbsp;2.7, HappyHorse&nbsp;1.0, and Wan&nbsp;3.0, against I2V Extension, VGoT, Mora, MovieAgent, and ReCA.</p>
           </article>
           <article class="tech-panel tech-card reveal">
             <h3>Spatial revisit</h3>
@@ -3276,9 +3277,9 @@ details.ev-item[open] .ev-toggle {
               </tbody>
             </table>
           </div>
-          <div class="table-card full-row reveal" role="region" aria-label="StoryMem metric breakdown" tabindex="0">
+          <div class="table-card full-row reveal" role="region" aria-label="ST-Bench metric breakdown" tabindex="0">
             <table class="paper-table">
-              <caption><span class="paper-tag">Tab. B</span><strong>StoryMem metric breakdown.</strong> StoryMem is the ST-Bench protocol used in the main comparison.</caption>
+              <caption><span class="paper-tag">Tab. B</span><strong>ST-Bench metric breakdown.</strong> The table reports official scores for aesthetic quality, global and single-shot prompt following, all-pair cross-shot consistency, and top-ten-pair cross-shot consistency.</caption>
               <thead>
                 <tr><th scope="col">Metric</th><th scope="col">Wan&nbsp;2.7 ATAS</th><th scope="col">Wan&nbsp;3.0 ATAS</th><th scope="col">MiniMax-H3 ATAS</th><th scope="col">HappyHorse ATAS</th><th scope="col">ReCA reference</th></tr>
               </thead>
@@ -3293,7 +3294,7 @@ details.ev-item[open] .ev-toggle {
           </div>
           <div class="table-card full-row reveal" role="region" aria-label="ViStory-Self metric breakdown" tabindex="0">
             <table class="paper-table">
-              <caption><span class="paper-tag">Tab. C</span><strong>ViStory-Self metric breakdown.</strong> Each row is an official ViStory-Self submetric; the final row reports its official aggregate when available.</caption>
+              <caption><span class="paper-tag">Tab. C</span><strong>ViStory-Self metric breakdown.</strong> Rows report the supplied within-story consistency dimensions and aggregate.</caption>
               <thead>
                 <tr><th scope="col">Metric</th><th scope="col">Wan&nbsp;2.7 ATAS</th><th scope="col">Wan&nbsp;3.0 ATAS</th><th scope="col">MiniMax-H3 ATAS</th><th scope="col">HappyHorse ATAS</th><th scope="col">ReCA reference</th></tr>
               </thead>
@@ -3307,7 +3308,7 @@ details.ev-item[open] .ev-toggle {
           </div>
           <div class="table-card full-row reveal" role="region" aria-label="ViStory-Cross metric breakdown" tabindex="0">
             <table class="paper-table">
-              <caption><span class="paper-tag">Tab. D</span><strong>ViStory-Cross metric breakdown.</strong> Each row is an official ViStory-Cross submetric; the final row reports its official aggregate when available.</caption>
+              <caption><span class="paper-tag">Tab. D</span><strong>ViStory-Cross metric breakdown.</strong> Rows report the supplied cross-shot consistency dimensions and aggregate.</caption>
               <thead>
                 <tr><th scope="col">Metric</th><th scope="col">Wan&nbsp;2.7 ATAS</th><th scope="col">Wan&nbsp;3.0 ATAS</th><th scope="col">MiniMax-H3 ATAS</th><th scope="col">HappyHorse ATAS</th><th scope="col">ReCA reference</th></tr>
               </thead>
@@ -3327,12 +3328,12 @@ details.ev-item[open] .ev-toggle {
           <span class="section-index">05</span>
           <h2 id="results-title">Quantitative Results</h2>
         </div>
-        <p class="tech-lede reveal">Table 1 compares ATAS with I2V Extension, VGoT, Mora, MovieAgent, and ReCA on four standard benchmarks and four rendering backbones; within a block, every method shares the generator, prompt package, duration budget, and evaluation protocol. VBench reflects local rendering quality, while StoryMem, ViStory-Self, and ViStory-Cross measure consistency across shots. ATAS has the best average on every backbone, and its clearest advantage is on the cross-shot measures. Figure 3 shows how accepted observations extend the scene and event state across intervening shots.</p>
+        <p class="tech-lede reveal">Table 1 compares ATAS with I2V Extension, VGoT, Mora, MovieAgent, and ReCA on four standard benchmarks and four rendering backbones; within a block, every method shares the generator, prompt package, duration budget, and evaluation protocol. VBench reflects local rendering quality, while ST-Bench, ViStory-Self, and ViStory-Cross measure consistency across shots. ATAS has the best average on every backbone, and its clearest advantage is on the cross-shot measures. Figure 3 shows how accepted observations extend the scene and event state across intervening shots.</p>
         <div class="table-card reveal" role="region" aria-label="Agent-level quantitative evaluation on standard benchmarks" tabindex="0">
           <table class="paper-table main-table">
-            <caption><span class="paper-tag">Tab. 1</span><strong>Agent-level quantitative evaluation on standard benchmarks.</strong> Models are grouped by source type and rendering backbone; methods within a block share the generator, prompt package, duration budget, and evaluation protocol. Bold and underlined entries mark the best and second-best values within each backbone block.</caption>
+            <caption><span class="paper-tag">Tab. 1</span><strong>Agent-level quantitative evaluation on standard benchmarks.</strong> Models are grouped by source type and rendering backbone. Methods within a block share the generator, prompt package, duration budget, and evaluation protocol. Bold and underlined entries mark the best and second-best values within each backbone block.</caption>
             <thead>
-              <tr><th scope="col">Model</th><th scope="col">Method</th><th scope="col">VBench</th><th scope="col">StoryMem</th><th scope="col">ViStory-Self</th><th scope="col">ViStory-Cross</th><th scope="col">Avg.</th></tr>
+              <tr><th scope="col">Model</th><th scope="col">Method</th><th scope="col">VBench</th><th scope="col">ST-Bench</th><th scope="col">ViStory-Self</th><th scope="col">ViStory-Cross</th><th scope="col">Avg.</th></tr>
             </thead>
             <tbody>
               <tr class="group"><th scope="rowgroup" colspan="7">Open-Source Models</th></tr>
@@ -3390,12 +3391,12 @@ details.ev-item[open] .ev-toggle {
           <article class="tech-panel finding-card reveal">
             <p class="stat-key">Wan&nbsp;2.7</p>
             <h3>0.656 against 0.612 average</h3>
-            <p>ATAS gives up the local VBench lead to ReCA (0.846 against 0.854) but remains ahead on StoryMem and both ViStory consistency measures.</p>
+            <p>ATAS gives up the local VBench lead to ReCA (0.846 against 0.854) but remains ahead on ST-Bench and both ViStory consistency measures.</p>
           </article>
           <article class="tech-panel finding-card reveal">
             <p class="stat-key">Cross-shot consistency</p>
             <h3>0.719 / 0.756 / 0.584</h3>
-            <p>StoryMem, ViStory-Self, and ViStory-Cross on Wan&nbsp;3.0, against 0.602, 0.661, and 0.481 for ReCA.</p>
+            <p>ST-Bench, ViStory-Self, and ViStory-Cross on Wan&nbsp;3.0, against 0.602, 0.661, and 0.481 for ReCA.</p>
           </article>
         </div>
       </section>
@@ -3410,24 +3411,24 @@ details.ev-item[open] .ev-toggle {
           <div class="figure-plate">
             <img src="assets/paper/fig4_revisit_recapture.webp" width="3000" height="1114" loading="lazy" decoding="async" alt="Frame grid with one row per method (I2V Extension, VGoT, Mora, MovieAgent, ReCA, ATAS): start and return views in a tailor shop and a kitchen for spatial revisit, and source start, source end, and recaptured end in a museum storage room and a pottery studio for event recapture.">
           </div>
-          <figcaption><span class="paper-tag">Fig. 4</span><strong>Spatial revisit and historical event recapture.</strong> The top row uses a target image for spatial comparison; the bottom row uses source-grounded event evidence under a requested camera.</figcaption>
+          <figcaption><span class="paper-tag">Fig. 4</span><strong>Spatial revisit and historical event recapture.</strong> The top row uses a target image for spatial comparison. The bottom row uses source-grounded event evidence under a requested camera.</figcaption>
         </figure>
-        <p class="tech-analysis reveal">The left half of Figure 4 is spatial revisit in a tailor shop and a kitchen, with the start view and the generated return view for each method. The right half is event recapture in a museum storage room and a pottery studio, where the start and end frames of the source event sit next to the end of the recaptured clip. With registered scene geometry, ATAS has the strongest return-view agreement and the best value on all three measures in Table 2, which supports a shared scene frame for revisits. In Table 4 it leads event identity, temporal order, and viewpoint realization, while ReCA is slightly higher on action and state. ATAS therefore retrieves the requested occurrence and viewpoint more reliably than the baselines, and exact action-state reproduction remains the main difficulty.</p>
+        <p class="tech-analysis reveal">The left half of Figure 4 is spatial revisit in a tailor shop and a kitchen, with the start view and the generated return view for each method. The right half is event recapture in a museum storage room and a pottery studio, where the start and end frames of the source event sit next to the end of the recaptured clip. With registered scene geometry, ATAS has the strongest return-view agreement and the best value on all three measures in Table 2, which supports a shared scene frame for revisits. In Table 3 it leads event identity, temporal order, and viewpoint realization, while ReCA is slightly higher on action and state. ATAS therefore retrieves the requested occurrence and viewpoint more reliably than the baselines, and exact action-state reproduction remains the main difficulty.</p>
         <div class="tech-grid">
           <div class="table-card reveal" role="region" aria-label="Spatial revisit" tabindex="0">
             <table class="paper-table">
-              <caption><span class="paper-tag">Tab. 2</span><strong>Spatial revisit.</strong> Multi-shot agents and 3D-guided view-synthesis methods are compared on return views after intervening requests.</caption>
+              <caption><span class="paper-tag">Tab. 2</span><strong>Spatial revisit.</strong> Agent-based and 3D-guided methods are evaluated against target images under a common-visibility mask, with ATAS shown separately.</caption>
               <thead>
                 <tr><th scope="col">Method</th><th scope="col">PSNR<sub>C</sub></th><th scope="col">SSIM<sub>C</sub></th><th scope="col">LPIPS<sub>C</sub></th></tr>
               </thead>
               <tbody>
-                <tr class="group"><th scope="rowgroup" colspan="4">Multi-shot Agents</th></tr>
                 <tr><th scope="row">I2V Extension</th><td>13.601</td><td>0.293</td><td>0.339</td></tr>
                 <tr><th scope="row">VGoT</th><td>14.444</td><td>0.313</td><td>0.300</td></tr>
                 <tr><th scope="row">Mora</th><td>13.796</td><td>0.318</td><td>0.288</td></tr>
                 <tr><th scope="row">MovieAgent</th><td>14.543</td><td>0.352</td><td>0.296</td></tr>
                 <tr><th scope="row">ReCA</th><td>13.870</td><td>0.268</td><td>0.306</td></tr>
-                <tr class="group"><th scope="rowgroup" colspan="4">3D-guided View Synthesis</th></tr>
+              </tbody>
+              <tbody>
                 <tr><th scope="row">FlexWorld</th><td>14.740</td><td>0.343</td><td>0.315</td></tr>
                 <tr><th scope="row">ViewCrafter</th><td>15.255</td><td>0.375</td><td>0.293</td></tr>
               </tbody>
@@ -3436,11 +3437,11 @@ details.ev-item[open] .ev-toggle {
               </tbody>
             </table>
           </div>
-          <div class="table-card reveal" role="region" aria-label="Source-grounded dynamic event recapture" tabindex="0">
+          <div class="table-card reveal" role="region" aria-label="Source-grounded event recapture" tabindex="0">
             <table class="paper-table">
-              <caption><span class="paper-tag">Tab. 4</span><strong>Source-grounded dynamic event recapture.</strong> Complete agents are compared on event identity, action and state, temporal order, character and object consistency, and viewpoint realization using source-event evidence and the requested camera.</caption>
+              <caption><span class="paper-tag">Tab. 3</span><strong>Source-grounded event recapture.</strong> Five criteria assess event identity, action and state, temporal order, character and object consistency, and viewpoint realization against source-event evidence and the requested camera. No synchronized target video is used. Scores are averaged across criteria and event requests.</caption>
               <thead>
-                <tr><th scope="col">Method</th><th scope="col">Event<br>identity</th><th scope="col">Action<br>state</th><th scope="col">Temporal<br>order</th><th scope="col">Character<br>object</th><th scope="col">Viewpoint</th></tr>
+                <tr><th scope="col">Method</th><th scope="col">Event<br>id.</th><th scope="col">Action<br>state</th><th scope="col">Temporal<br>order</th><th scope="col">Char.<br>object</th><th scope="col">View<br>realization</th></tr>
               </thead>
               <tbody>
                 <tr><th scope="row">I2V Extension</th><td>0.450</td><td>0.433</td><td>0.433</td><td>0.817</td><td>0.200</td></tr>
@@ -3472,32 +3473,70 @@ details.ev-item[open] .ev-toggle {
         </div>
       </section>
 
-      <section id="ablation" class="tech-section" aria-labelledby="ablation-title">
+      <section id="human-study" class="tech-section" aria-labelledby="human-title">
         <div class="tech-section-head reveal">
           <span class="section-index">07</span>
+          <h2 id="human-title">Human Evaluation</h2>
+        </div>
+        <p class="tech-lede reveal">Human raters compare I2V Extension, VGoT, Mora, MovieAgent, ReCA, and ATAS under one shared, anonymized protocol, using the criteria of ReCA: visual appeal, script faithfulness, character consistency, background consistency, physical law, and narrative coherence. Each long video is watched as a whole and scored on every criterion from 1 to 5 with the method identity hidden (Figure F). Figure G shows the distribution of ratings, and Figure H compares the automatic diagnostics with human ratings on matched clips.</p>
+        <figure class="paper-figure reveal">
+          <div class="figure-plate">
+            <img src="assets/paper/fig6_human_eval.webp" width="2400" height="699" loading="lazy" decoding="async" alt="Grouped bar chart of mean human ratings from 1 to 5 for I2V Extension, VGoT, Mora, MovieAgent, ReCA, and ATAS on visual appeal, script faithfulness, character consistency, background consistency, physical law, and narrative coherence.">
+          </div>
+          <figcaption><span class="paper-tag">Fig. 5</span><strong>Human evaluation of agent methods.</strong> Grouped bars show mean ratings and standard-error whiskers for six methods across six criteria.</figcaption>
+        </figure>
+        <p class="tech-analysis reveal">Each group of bars in Figure 5 is one criterion, and ATAS has the highest mean in every group. Its means are highest for script faithfulness (4.40), character consistency (4.22), and visual appeal (4.10), and lowest for background consistency (3.62) and narrative coherence (3.77). Raters therefore see most clearly that the shots follow the script and that characters carry over between shots. Consistency of the whole environment and coherence of the full story are less resolved.</p>
+        <div class="tech-grid">
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_user_study_interface.webp" width="2400" height="1297" loading="lazy" decoding="async" alt="Human evaluation interface">
+            </div>
+            <figcaption><span class="paper-tag">Fig. F</span><strong>Human evaluation interface.</strong> Each page shows one anonymized long video with its story title and synopsis.</figcaption>
+          </figure>
+          <figure class="paper-figure reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_human_ratings.webp" width="2400" height="1002" loading="lazy" decoding="async" alt="Distribution of human judgments">
+            </div>
+            <figcaption><span class="paper-tag">Fig. G</span><strong>Distribution of human judgments.</strong> The heatmaps report mean ratings and the fraction of ratings at least four for each criterion and method. The side panel summarizes inter-rater agreement.</figcaption>
+          </figure>
+          <p class="tech-analysis reveal">Figure F is the page a rater sees: one anonymized long video, rated as a whole, so the consistency criteria cover the complete film. Figure G breaks the same ratings down by criterion and method, with mean ratings in the left heatmap, the share of ratings of at least four in the right heatmap, and the inter-rater agreement of each criterion at the side. ATAS reaches 57% to 95% ratings of at least four across criteria, against 14% to 64% for ReCA, the strongest baseline. Agreement coefficients range from 0.58 to 0.72, so the ordering does not rest on a criterion with unusually unstable ratings. Physical law and narrative coherence remain harder than script faithfulness and character consistency.</p>
+          <figure class="paper-figure full-row reveal">
+            <div class="figure-plate">
+              <img src="assets/paper/app_human_agreement.webp" width="2400" height="937" loading="lazy" decoding="async" alt="Automatic-to-human agreement">
+            </div>
+            <figcaption><span class="paper-tag">Fig. H</span><strong>Automatic-to-human agreement.</strong> Spearman correlations compare the event-recapture and spatial-revisit diagnostics with human ratings on matched clips, alongside the human–human agreement ceiling.</figcaption>
+          </figure>
+          <p class="tech-analysis reveal">Figure H measures how well the automatic diagnostics agree with human ratings on matched clips. The Spearman correlation is 0.61 for event identity, 0.54 for action and state, 0.49 for temporal phase, 0.41 for character and object, and 0.57 for viewpoint, and the spatial diagnostic, negated LPIPS<sub>C</sub>, reaches 0.44. The human–human ceilings are higher, from 0.67 to 0.80, which leaves room for evaluator noise and for aspects of perception that the scores do not capture. The automatic scores are useful as structured diagnostics, and human judgment is still needed alongside them.</p>
+        </div>
+        <div class="finding-grid">
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Mean ratings</p>
+            <h3>3.62 to 4.40</h3>
+            <p>ATAS has the highest mean rating on all six criteria; ReCA, the strongest baseline, ranges from 2.62 to 3.67.</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Ratings of at least four</p>
+            <h3>57% to 95%</h3>
+            <p>The share for ATAS across criteria, against 14% to 64% for ReCA; agreement coefficients range from 0.58 to 0.72.</p>
+          </article>
+          <article class="tech-panel finding-card reveal">
+            <p class="stat-key">Automatic and human</p>
+            <h3>0.41 to 0.61</h3>
+            <p>Spearman correlation of the event-recapture axes with human ratings, below the human–human ceilings of 0.67 to 0.80.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="ablation" class="tech-section" aria-labelledby="ablation-title">
+        <div class="tech-section-head reveal">
+          <span class="section-index">08</span>
           <h2 id="ablation-title">Ablation and Analysis</h2>
         </div>
-        <p class="tech-lede reveal">The controlled studies separate the contribution of memory contents from that of agent components, using the Wan&nbsp;3.0 backbone with the prompts, cameras, candidate budget, and retry policy fixed. Table 3 changes only what the memory contains, and Table 5 adds agent components cumulatively. Figure 5 measures what the state costs across the same six memory settings: persistent state trades a modest runtime and memory overhead for fewer retries. Figures C–E vary memory capacity, update frequency, memory freshness, and the strictness of the state update check, each next to the table that supplies its values.</p>
+        <p class="tech-lede reveal">The controlled studies separate the contribution of agent components from that of memory contents, using the Wan&nbsp;3.0 backbone with the prompts, cameras, candidate budget, and retry policy fixed. Table 4 adds agent components cumulatively, and Table 5 changes only what the memory contains. Figure 6 measures what the state costs across the same six memory settings: persistent memory reduces retry demand at a measurable compute cost. Figures C–E vary memory capacity, update frequency, memory freshness, and the strictness of the state update check, each next to the table that supplies its values.</p>
         <div class="tech-grid">
-          <div class="table-card full-row reveal" role="region" aria-label="Memory-level ablation and analysis" tabindex="0">
-            <table class="paper-table">
-              <caption><span class="paper-tag">Tab. 3</span><strong>Memory-level ablation and analysis.</strong> All rows use the same ATAS agent, Wan&nbsp;3.0 backbone, prompts, cameras, candidate budget, and retry policy.</caption>
-              <thead>
-                <tr><th scope="col">Configuration</th><th scope="col">C-Top10 ↑</th><th scope="col">LPIPS<sub>C</sub> ↓</th><th scope="col">Recap. Score ↑</th></tr>
-              </thead>
-              <tbody>
-                <tr><th scope="row">ATAS w/o memory</th><td>0.536</td><td>0.341</td><td>0.452</td></tr>
-                <tr><th scope="row">ATAS w/ frame history</th><td>0.598</td><td>0.319</td><td>0.548</td></tr>
-                <tr><th scope="row">ATAS w/ static scene</th><td>0.617</td><td>0.289</td><td>0.583</td></tr>
-                <tr><th scope="row">ATAS w/ updated scene</th><td>0.658</td><td>0.286</td><td>0.585</td></tr>
-                <tr><th scope="row">ATAS w/ scene + event</th><td>0.703</td><td>0.285</td><td>0.728</td></tr>
-                <tr class="ours"><th scope="row">ATAS w/ full state</th><td class="b">0.719</td><td class="b">0.284</td><td class="b">0.739</td></tr>
-              </tbody>
-            </table>
-          </div>
           <div class="table-card full-row reveal" role="region" aria-label="Agent-component ablation" tabindex="0">
             <table class="paper-table">
-              <caption><span class="paper-tag">Tab. 5</span><strong>Agent-component ablation.</strong> All rows use Wan&nbsp;3.0 and the same requests, cameras, candidate budget, and retry policy.</caption>
+              <caption><span class="paper-tag">Tab. 4</span><strong>Agent-component ablation.</strong> All rows use Wan&nbsp;3.0 and the same requests, cameras, candidate budget, and retry policy.</caption>
               <thead>
                 <tr><th scope="col">Configuration</th><th scope="col">ViStory average ↑</th><th scope="col">C-Top10 ↑</th><th scope="col">LPIPS<sub>C</sub> ↓</th><th scope="col">Event Recapture Score ↑</th></tr>
               </thead>
@@ -3510,13 +3549,29 @@ details.ev-item[open] .ev-toggle {
               </tbody>
             </table>
           </div>
+          <div class="table-card full-row reveal" role="region" aria-label="Memory analysis" tabindex="0">
+            <table class="paper-table">
+              <caption><span class="paper-tag">Tab. 5</span><strong>Memory analysis.</strong> ATAS with Wan&nbsp;3.0 is fixed. Rows vary stored evidence and state checks.</caption>
+              <thead>
+                <tr><th scope="col">Config.</th><th scope="col">C-Top10 ↑</th><th scope="col">LPIPS<sub>C</sub> ↓</th><th scope="col">Recap. ↑</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">ATAS w/o memory</th><td>0.536</td><td>0.341</td><td>0.452</td></tr>
+                <tr><th scope="row">ATAS w/ frame history</th><td>0.598</td><td>0.319</td><td>0.548</td></tr>
+                <tr><th scope="row">ATAS w/ static scene</th><td>0.617</td><td>0.289</td><td>0.583</td></tr>
+                <tr><th scope="row">ATAS w/ updated scene</th><td>0.658</td><td>0.286</td><td>0.585</td></tr>
+                <tr><th scope="row">ATAS w/ scene + event</th><td>0.703</td><td>0.285</td><td>0.728</td></tr>
+                <tr class="ours"><th scope="row">ATAS w/ full state</th><td class="b">0.719</td><td class="b">0.284</td><td class="b">0.739</td></tr>
+              </tbody>
+            </table>
+          </div>
           <figure class="paper-figure full-row reveal">
             <div class="figure-plate">
               <img src="assets/paper/fig5_efficiency.webp" width="2400" height="1222" loading="lazy" decoding="async" alt="Efficiency charts over six memory settings, from no memory to the full state: runtime profile with wall-clock time and real-time factor, candidate lifecycle, and retry and delivery efficiency with retries per shot, retry-adjusted delivery time, throughput, and memory overhead.">
             </div>
-            <figcaption><span class="paper-tag">Fig. 5</span><strong>Efficiency comparison across memory settings.</strong> Panels (a), (b), and (c) show runtime, candidate lifecycle, and retry and delivery measures across the six memory settings.</figcaption>
+            <figcaption><span class="paper-tag">Fig. 6</span><strong>Efficiency comparison across memory settings.</strong> Panels (a), (b), and (c) show runtime, candidate lifecycle, and retry and delivery measures across six memory settings.</figcaption>
           </figure>
-          <p class="tech-analysis reveal">Each panel of Figure 5 orders the six memory settings from no memory to the full state. In panel (a), per-story wall-clock time rises from 51.9 to 64.9 minutes. In panel (b), the share of candidates rejected at film review falls at every step, from 52.6% to 36.8%, so the improvement already appears in the intermediate settings. In panel (c), retries drop from 1.00 to 0.54 per shot and retry-adjusted delivery time from 359 to 339 seconds per shot, while throughput falls from 7.28 to 6.21 shots per hour and memory overhead reaches 98 seconds per shot. The state pays for fewer retries and faster retry-adjusted delivery with a measurable amount of extra compute.</p>
+          <p class="tech-analysis reveal">Each panel of Figure 6 orders the six memory settings from no memory to the full state. In panel (a), per-story wall-clock time rises from 51.9 to 64.9 minutes. In panel (b), the share of candidates rejected at film review falls at every step, from 52.6% to 36.8%, so the improvement already appears in the intermediate settings. In panel (c), retries drop from 1.00 to 0.54 per shot and retry-adjusted delivery time from 359 to 339 seconds per shot, while throughput falls from 7.28 to 6.21 shots per hour and memory overhead reaches 98 seconds per shot. The state pays for fewer retries and faster retry-adjusted delivery with a measurable amount of extra compute.</p>
           <figure class="paper-figure reveal">
             <div class="figure-plate">
               <img src="assets/paper/app_memory_sensitivity.webp" width="2400" height="788" loading="lazy" decoding="async" alt="Memory capacity and update sensitivity">
@@ -3567,7 +3622,7 @@ details.ev-item[open] .ev-toggle {
           </figure>
           <div class="table-card reveal" role="region" aria-label="State update check sensitivity" tabindex="0">
             <table class="paper-table">
-              <caption><span class="paper-tag">Tab. H</span><strong>State update check sensitivity.</strong> The table supplies the values used by Fig.&nbsp;E; it reports no independent benchmark.</caption>
+              <caption><span class="paper-tag">Tab. H</span><strong>State update check sensitivity.</strong> The table supplies the values used by Fig.&nbsp;E. It reports no independent benchmark.</caption>
               <thead>
                 <tr><th scope="col">State update setting</th><th scope="col">State update rate</th><th scope="col">C-Top10</th><th scope="col">LPIPS<sub>C</sub></th><th scope="col">Event score</th></tr>
               </thead>
@@ -3599,66 +3654,12 @@ details.ev-item[open] .ev-toggle {
         </div>
       </section>
 
-      <section id="human-study" class="tech-section" aria-labelledby="human-title">
-        <div class="tech-section-head reveal">
-          <span class="section-index">08</span>
-          <h2 id="human-title">Human Evaluation</h2>
-        </div>
-        <p class="tech-lede reveal">Human raters compare I2V Extension, VGoT, Mora, MovieAgent, ReCA, and ATAS under one shared, anonymized protocol, using the criteria of ReCA: visual appeal, script faithfulness, character consistency, background consistency, physical law, and narrative coherence. Each long video is watched as a whole and scored on every criterion from 1 to 5 with the method identity hidden (Figure F). Figure G shows the distribution of ratings, and Figure H compares the automatic diagnostics with human ratings on matched clips.</p>
-        <figure class="paper-figure reveal">
-          <div class="figure-plate">
-            <img src="assets/paper/fig6_human_eval.webp" width="2400" height="699" loading="lazy" decoding="async" alt="Grouped bar chart of mean human ratings from 1 to 5 for I2V Extension, VGoT, Mora, MovieAgent, ReCA, and ATAS on visual appeal, script faithfulness, character consistency, background consistency, physical law, and narrative coherence.">
-          </div>
-          <figcaption><span class="paper-tag">Fig. 6</span><strong>Human evaluation of agent methods.</strong> Grouped bars show mean ratings and standard-error whiskers for six methods across six criteria.</figcaption>
-        </figure>
-        <p class="tech-analysis reveal">Each group of bars in Figure 6 is one criterion, and ATAS has the highest mean in every group. Its means are highest for script faithfulness (4.40), character consistency (4.22), and visual appeal (4.10), and lowest for background consistency (3.62) and narrative coherence (3.77). Raters therefore see most clearly that the shots follow the script and that characters carry over between shots. Consistency of the whole environment and coherence of the full story are less resolved.</p>
-        <div class="tech-grid">
-          <figure class="paper-figure reveal">
-            <div class="figure-plate">
-              <img src="assets/paper/app_user_study_interface.webp" width="2400" height="1165" loading="lazy" decoding="async" alt="Human evaluation interface">
-            </div>
-            <figcaption><span class="paper-tag">Fig. F</span><strong>Human evaluation interface.</strong> Each page shows one anonymized long video with its story title and synopsis.</figcaption>
-          </figure>
-          <figure class="paper-figure reveal">
-            <div class="figure-plate">
-              <img src="assets/paper/app_human_ratings.webp" width="2400" height="1002" loading="lazy" decoding="async" alt="Distribution of human judgments">
-            </div>
-            <figcaption><span class="paper-tag">Fig. G</span><strong>Distribution of human judgments.</strong> The heatmaps report mean ratings and the fraction of ratings above four for each criterion and method; the side panel summarizes inter-rater agreement.</figcaption>
-          </figure>
-          <p class="tech-analysis reveal">Figure F is the page a rater sees: one anonymized long video, rated as a whole, so the consistency criteria cover the complete film. Figure G breaks the same ratings down by criterion and method, with mean ratings in the left heatmap, the share of ratings of at least four in the right heatmap, and the inter-rater agreement of each criterion at the side. ATAS reaches 57% to 95% ratings of at least four across criteria, against 14% to 64% for ReCA, the strongest baseline. Agreement coefficients range from 0.58 to 0.72, so the ordering does not rest on a criterion with unusually unstable ratings. Physical law and narrative coherence remain harder than script faithfulness and character consistency.</p>
-          <figure class="paper-figure full-row reveal">
-            <div class="figure-plate">
-              <img src="assets/paper/app_human_agreement.webp" width="2400" height="937" loading="lazy" decoding="async" alt="Automatic-to-human agreement">
-            </div>
-            <figcaption><span class="paper-tag">Fig. H</span><strong>Automatic-to-human agreement.</strong> Spearman correlations compare the event-recapture and spatial-revisit diagnostics with human ratings on matched clips, alongside the human–human agreement ceiling.</figcaption>
-          </figure>
-          <p class="tech-analysis reveal">Figure H measures how well the automatic diagnostics agree with human ratings on matched clips. The Spearman correlation is 0.61 for event identity, 0.54 for action and state, 0.49 for temporal phase, 0.41 for character and object, and 0.57 for viewpoint, and the spatial diagnostic, negated LPIPS<sub>C</sub>, reaches 0.44. The human–human ceilings are higher, from 0.67 to 0.80, which leaves room for evaluator noise and for aspects of perception that the scores do not capture. The automatic scores are useful as structured diagnostics, and human judgment is still needed alongside them.</p>
-        </div>
-        <div class="finding-grid">
-          <article class="tech-panel finding-card reveal">
-            <p class="stat-key">Mean ratings</p>
-            <h3>3.62 to 4.40</h3>
-            <p>ATAS has the highest mean rating on all six criteria; ReCA, the strongest baseline, ranges from 2.62 to 3.67.</p>
-          </article>
-          <article class="tech-panel finding-card reveal">
-            <p class="stat-key">Ratings of at least four</p>
-            <h3>57% to 95%</h3>
-            <p>The share for ATAS across criteria, against 14% to 64% for ReCA; agreement coefficients range from 0.58 to 0.72.</p>
-          </article>
-          <article class="tech-panel finding-card reveal">
-            <p class="stat-key">Automatic and human</p>
-            <h3>0.41 to 0.61</h3>
-            <p>Spearman correlation of the event-recapture axes with human ratings, below the human–human ceilings of 0.67 to 0.80.</p>
-          </article>
-        </div>
-      </section>
-
       <section id="qualitative" class="tech-section" aria-labelledby="qualitative-title">
         <div class="tech-section-head reveal">
           <span class="section-index">09</span>
-          <h2 id="qualitative-title">Qualitative Results and Failure Cases</h2>
+          <h2 id="qualitative-title">Qualitative Results</h2>
         </div>
-        <p class="tech-lede reveal">Figure I compares the methods on matched frames from a record shop and a bakery, Figure K shows timestamped frames from six stories, and Figure J follows one rollout through scene changes, a spatial revisit, and an event recapture request. Figure L shows the failures that remain, grouped by where they enter the loop: generation, reconstruction, and registration.</p>
+        <p class="tech-lede reveal">Figure I compares the methods on matched frames from a record shop and a bakery, Figure K shows timestamped frames from six stories, and Figure J follows one rollout through scene changes, a spatial revisit, and an event recapture request.</p>
         <div class="tech-grid">
           <figure class="paper-figure reveal">
             <div class="figure-plate">
@@ -3675,18 +3676,11 @@ details.ev-item[open] .ev-toggle {
           <p class="tech-analysis reveal">In Figure I each row is one method and each column one shot of the record-shop or bakery story, so reading along a row shows whether room layout, object placement, and character state are still in place after the shots in between. A frame can look plausible on its own while the layout or an object's state has drifted, which a single global similarity score does not capture. The ATAS row is the reference for the intended behavior. Figure K widens the view to six stories whose frames cover different interior spaces, people, objects, and camera patterns, so the behavior is not tied to one setting.</p>
           <figure class="paper-figure full-row reveal">
             <div class="figure-plate">
-              <img src="assets/paper/figI.webp" width="2400" height="482" loading="lazy" decoding="async" alt="Representative rollout timeline">
+              <img src="assets/paper/rollout_timeline.webp" width="2400" height="482" loading="lazy" decoding="async" alt="Representative rollout timeline">
             </div>
             <figcaption><span class="paper-tag">Fig. J</span><strong>Representative rollout timeline.</strong> The timeline follows the generated film and memory condition through scene changes, a spatial revisit, and an event recapture request.</figcaption>
           </figure>
           <p class="tech-analysis reveal">Figure J has three rows: the scene that each stretch of film belongs to, the generated film, and the memory condition used for each segment. The first segment in a new scene starts without memory, and the following segments in the same scene are conditioned on a stored earlier segment. Near the end the film returns to the kitchen and then to the backyard, and both returns are conditioned on segments stored during the first visits. Read together, the rows show when a scene state is created, when a later request queries it, and when the returned observation is written back.</p>
-          <figure class="paper-figure full-row reveal">
-            <div class="figure-plate">
-              <img src="assets/paper/app_failure_taxonomy.webp" width="2400" height="786" loading="lazy" decoding="async" alt="Representative failure cases">
-            </div>
-            <figcaption><span class="paper-tag">Fig. L</span><strong>Representative failure cases.</strong> The examples distinguish generator-limited failures from failures in registration, event retrieval, camera realization, and state update.</figcaption>
-          </figure>
-          <p class="tech-analysis reveal">Figure L shows six failure cases, grouped by the stage at which they enter the loop: one from generation, two from reconstruction, and three from registration. Generation failures, here extra objects that appear during a take, make the film inconsistent before memory is consulted. Reconstruction failures, such as adjacent chunks that do not align at their seam, prevent a reliable 3D observation, and registration failures, such as a take that shares no geometry with the stored scene, leave the film usable but block its alignment to that scene. The two status lines under each case record what happened to the film and whether the world was updated, which separates contained failures from propagated ones. A rejected observation costs latency without corrupting later state, while an incorrect update can make several later shots fail, which is why film review, registration, and the state update are separate decisions.</p>
         </div>
       </section>
 
