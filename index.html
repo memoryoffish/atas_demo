@@ -6,7 +6,10 @@
     <title>ATAS: Any Time, Any Space: A World-State-Centric Framework for Agentic Video Generation</title>
     <meta name="description" content="Video results, paper figures, and quantitative tables for ATAS: a world-state-centric framework for agentic video generation.">
     <meta name="theme-color" content="#000000">
-    <link rel="icon" href="data:,">
+    <!-- 标签页图标取自项目 logo 左边的玻璃胶片图标（.scratch/brand/make_favicon.py 生成） -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/brand/favicon-192.png">
+    <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
     <style>*,
 *::before,
 *::after {
@@ -174,34 +177,49 @@ h1 .nowrap {
   padding-left: 0.34em;
 }
 
-/* 标题区大字是项目 logo 里的 "Any Time, Any Space" 字样（不带图标）：去掉白底，整行按 logo 首字母的蓝、紫、品红、粉、橙做横向渐变，
-   由 .scratch/brand/make_title_gradient.py 生成 assets/brand/title_gradient.webp */
-h1 .hero-logo {
-  display: block;
-  height: auto;
-  margin: 0 auto 18px;
-  max-width: 100%;
-  width: clamp(300px, 64vw, 940px);
+/* 标题区的主标题、副标题和作者，字体、字号、字重照 microsoft.github.io/LatentSpatialMemory：
+   Manrope（可变字重，拉丁字符子集，SIL OFL，许可见 assets/fonts/Manrope-OFL.txt），主标题 800、副标题 800、作者 700 */
+@font-face {
+  font-display: swap;
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 200 800;
+  src: url("assets/fonts/manrope-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+h1 .hero-title {
+  color: rgb(255, 248, 235);
+  font-family: "Manrope", var(--sans);
+  font-size: clamp(3.6rem, 6vw, 6.1rem);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+/* 副标题比参考页长，会折成两行，行高比参考页的 1 略松 */
 h1 .h1-soft {
-  color: #fff;
-  font-size: clamp(22px, 2.8vw, 46px);
-  letter-spacing: -0.01em;
-  line-height: 1.12;
+  color: rgba(255, 248, 235, 0.92);
+  font-family: "Manrope", var(--sans);
+  font-size: clamp(1.65rem, 3vw, 3rem);
+  font-weight: 800;
+  line-height: 1.08;
+  margin: 18px auto 0;
   max-width: 1120px;
 }
 
 .authors {
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 248, 235, 0.96);
   display: flex;
   flex-wrap: wrap;
-  font-size: clamp(14px, 1.2vw, 17px);
-  font-weight: 500;
-  gap: 6px 22px;
+  font-family: "Manrope", var(--sans);
+  font-size: clamp(0.98rem, 1.13vw, 1.16rem);
+  font-weight: 700;
+  gap: 0 1.16em;
   justify-content: center;
-  letter-spacing: 0.02em;
-  max-width: 820px;
+  line-height: 1.55;
+  max-width: min(1240px, 98vw);
 }
 
 .authors a,
@@ -2203,9 +2221,25 @@ details.ev-item[open] .ev-toggle {
   grid-column: 1 / -1;
 }
 
-.tech-main .paper-figure {
-  margin-top: 16px;
+/* 图一律比 Abstract 面板略窄：左右各收进一小段，居中；一幅一行，有图的网格不并排 */
+.tech-main {
+  --figure-inset: clamp(0px, 2vw, 24px);
+}
+
+.tech-main .paper-figure,
+.tech-main .paper-figure.wide,
+.tech-main .tech-grid > .paper-figure {
+  margin: 16px 0 0 var(--figure-inset);
   max-width: none;
+  width: calc(100% - 2 * var(--figure-inset));
+}
+
+.tech-main .tech-grid:has(> .paper-figure) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.tech-main .tech-grid > .paper-figure {
+  margin-top: 0;
 }
 
 .tech-main .table-card {
@@ -2878,7 +2912,7 @@ details.ev-item[open] .ev-toggle {
       </div>
       <div class="masthead-content">
         <h1 class="reveal">
-          <img class="hero-logo" src="assets/brand/title_gradient.webp" width="1406" height="168" alt="Any Time, Any Space">
+          <span class="hero-title"><span class="nowrap">Any Time,</span> <span class="nowrap">Any Space</span></span>
           <span class="h1-soft">A <span class="nowrap">World-State-Centric</span> Framework for Agentic Video Generation</span>
         </h1>
         <div class="authors reveal" aria-label="Authors">
