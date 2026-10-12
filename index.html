@@ -222,6 +222,59 @@ h1 .h1-soft {
   max-width: min(1240px, 98vw);
 }
 
+/* 作者右上角的单位编号和标注（* 共同一作，† 通讯作者），下面一行单位、一行标注说明，照论文技术报告的作者栏 */
+.authors sup,
+.tech-authors sup,
+.affiliations sup,
+.author-notes sup,
+.tech-affiliations sup {
+  font-size: 0.66em;
+  font-weight: 600;
+  line-height: 0;
+  margin-left: 0.12em;
+}
+
+.affiliations sup,
+.author-notes sup,
+.tech-affiliations sup {
+  margin: 0 0.18em 0 0;
+}
+
+.affiliations,
+.author-notes {
+  display: flex;
+  flex-wrap: wrap;
+  font-family: "Manrope", var(--sans);
+  gap: 2px 1.6em;
+  justify-content: center;
+  max-width: min(980px, 98vw);
+}
+
+.affiliations {
+  color: rgba(255, 248, 235, 0.78);
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+.author-notes {
+  color: rgba(255, 248, 235, 0.6);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.6;
+  margin: 4px 0 0;
+}
+
+.tech-affiliations {
+  color: #aeb5c2;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 2px 18px;
+  margin: -12px 0 20px;
+}
+
 .authors a,
 .tech-authors a {
   color: inherit;
@@ -2916,16 +2969,18 @@ details.ev-item[open] .ev-toggle {
           <span class="h1-soft">A <span class="nowrap">World-State-Centric</span> Framework for Agentic Video Generation</span>
         </h1>
         <div class="authors reveal" aria-label="Authors">
-          <a href="https://lhmd.top/" target="_blank" rel="noopener noreferrer">Weijie Wang</a>
-          <a href="https://zhmin.top/" target="_blank" rel="noopener noreferrer">Haomin Zhang</a>
-          <a href="https://github.com/memoryoffish" target="_blank" rel="noopener noreferrer">Ye Li</a>
-          <a href="https://github.com/AkideLiu" target="_blank" rel="noopener noreferrer">Akide Liu</a>
-          <a href="https://zhao-haoyu.github.io/" target="_blank" rel="noopener noreferrer">Haoyu Zhao</a>
-          <a href="https://scholar.google.com/citations?user=CTEQwwwAAAAJ" target="_blank" rel="noopener noreferrer">Yefei He</a>
-          <a href="https://donydchen.github.io/" target="_blank" rel="noopener noreferrer">Donny Y. Chen</a>
-          <a href="https://github.com/Chenfeng1271" target="_blank" rel="noopener noreferrer">Feng Chen</a>
-          <a href="https://bohanzhuang.github.io/" target="_blank" rel="noopener noreferrer">Bohan Zhuang</a>
+          <a href="https://lhmd.top/" target="_blank" rel="noopener noreferrer">Weijie Wang<sup>1,*</sup></a>
+          <a href="https://zhmin.top/" target="_blank" rel="noopener noreferrer">Haomin Zhang<sup>1,*</sup></a>
+          <a href="https://github.com/memoryoffish" target="_blank" rel="noopener noreferrer">Ye Li<sup>1,*</sup></a>
+          <a href="https://github.com/AkideLiu" target="_blank" rel="noopener noreferrer">Akide Liu<sup>2</sup></a>
+          <a href="https://zhao-haoyu.github.io/" target="_blank" rel="noopener noreferrer">Haoyu Zhao<sup>1</sup></a>
+          <a href="https://scholar.google.com/citations?user=CTEQwwwAAAAJ" target="_blank" rel="noopener noreferrer">Yefei He<sup>1</sup></a>
+          <a href="https://donydchen.github.io/" target="_blank" rel="noopener noreferrer">Donny Y. Chen<sup>2</sup></a>
+          <a href="https://github.com/Chenfeng1271" target="_blank" rel="noopener noreferrer">Feng Chen<sup>3</sup></a>
+          <a href="https://bohanzhuang.github.io/" target="_blank" rel="noopener noreferrer">Bohan Zhuang<sup>1,†</sup></a>
         </div>
+        <p class="affiliations reveal"><span><sup>1</sup>Zhejiang University</span><span><sup>2</sup>Monash University</span><span><sup>3</sup>Adelaide University</span></p>
+        <p class="author-notes reveal"><span><sup>*</sup>Equal contribution</span><span><sup>†</sup>Corresponding author</span></p>
         <div class="resource-links reveal" aria-label="Paper resources">
           <a class="primary" href="https://openreview.net/pdf?id=vMypxbZHbc" target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>Paper
@@ -3037,16 +3092,17 @@ details.ev-item[open] .ev-toggle {
       <section class="tech-hero-panel reveal" aria-labelledby="tech-title">
         <h1 id="tech-title">ATAS: Any Time, Any Space: A World-State-Centric Framework for Agentic Video Generation</h1>
         <div class="tech-authors" aria-label="Authors">
-          <a href="https://lhmd.top/" target="_blank" rel="noopener noreferrer">Weijie Wang</a>
-          <a href="https://zhmin.top/" target="_blank" rel="noopener noreferrer">Haomin Zhang</a>
-          <a href="https://github.com/memoryoffish" target="_blank" rel="noopener noreferrer">Ye Li</a>
-          <a href="https://github.com/AkideLiu" target="_blank" rel="noopener noreferrer">Akide Liu</a>
-          <a href="https://zhao-haoyu.github.io/" target="_blank" rel="noopener noreferrer">Haoyu Zhao</a>
-          <a href="https://scholar.google.com/citations?user=CTEQwwwAAAAJ" target="_blank" rel="noopener noreferrer">Yefei He</a>
-          <a href="https://donydchen.github.io/" target="_blank" rel="noopener noreferrer">Donny Y. Chen</a>
-          <a href="https://github.com/Chenfeng1271" target="_blank" rel="noopener noreferrer">Feng Chen</a>
-          <a href="https://bohanzhuang.github.io/" target="_blank" rel="noopener noreferrer">Bohan Zhuang</a>
+          <a href="https://lhmd.top/" target="_blank" rel="noopener noreferrer">Weijie Wang<sup>1,*</sup></a>
+          <a href="https://zhmin.top/" target="_blank" rel="noopener noreferrer">Haomin Zhang<sup>1,*</sup></a>
+          <a href="https://github.com/memoryoffish" target="_blank" rel="noopener noreferrer">Ye Li<sup>1,*</sup></a>
+          <a href="https://github.com/AkideLiu" target="_blank" rel="noopener noreferrer">Akide Liu<sup>2</sup></a>
+          <a href="https://zhao-haoyu.github.io/" target="_blank" rel="noopener noreferrer">Haoyu Zhao<sup>1</sup></a>
+          <a href="https://scholar.google.com/citations?user=CTEQwwwAAAAJ" target="_blank" rel="noopener noreferrer">Yefei He<sup>1</sup></a>
+          <a href="https://donydchen.github.io/" target="_blank" rel="noopener noreferrer">Donny Y. Chen<sup>2</sup></a>
+          <a href="https://github.com/Chenfeng1271" target="_blank" rel="noopener noreferrer">Feng Chen<sup>3</sup></a>
+          <a href="https://bohanzhuang.github.io/" target="_blank" rel="noopener noreferrer">Bohan Zhuang<sup>1,†</sup></a>
         </div>
+        <p class="tech-affiliations"><span><sup>1</sup>Zhejiang University</span><span><sup>2</sup>Monash University</span><span><sup>3</sup>Adelaide University</span><span><sup>*</sup>Equal contribution</span><span><sup>†</sup>Corresponding author</span></p>
         <div class="tech-stat-grid">
           <article class="tech-stat-card">
             <p class="stat-key">Multi-shot benchmarks</p>
