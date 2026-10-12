@@ -174,14 +174,14 @@ h1 .nowrap {
   padding-left: 0.34em;
 }
 
-/* 标题区大字是项目 logo（玻璃胶片图标加 "Any Time, Any Space"）：原图白底深蓝字，
-   assets/brand/logo_dark.webp 去掉了白底、深蓝字改成白色，彩色首字母和图标保持原色 */
+/* 标题区大字是项目 logo 里的 "Any Time, Any Space" 字样（不带图标）：去掉白底，整行按 logo 首字母的蓝、紫、品红、粉、橙做横向渐变，
+   由 .scratch/brand/make_title_gradient.py 生成 assets/brand/title_gradient.webp */
 h1 .hero-logo {
   display: block;
   height: auto;
   margin: 0 auto 18px;
   max-width: 100%;
-  width: clamp(300px, 70vw, 1040px);
+  width: clamp(300px, 64vw, 940px);
 }
 
 h1 .h1-soft {
@@ -2878,7 +2878,7 @@ details.ev-item[open] .ev-toggle {
       </div>
       <div class="masthead-content">
         <h1 class="reveal">
-          <img class="hero-logo" src="assets/brand/logo_dark.webp" width="2110" height="475" alt="Any Time, Any Space">
+          <img class="hero-logo" src="assets/brand/title_gradient.webp" width="1406" height="168" alt="Any Time, Any Space">
           <span class="h1-soft">A <span class="nowrap">World-State-Centric</span> Framework for Agentic Video Generation</span>
         </h1>
         <div class="authors reveal" aria-label="Authors">
