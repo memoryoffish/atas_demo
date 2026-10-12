@@ -2295,6 +2295,24 @@ details.ev-item[open] .ev-toggle {
   margin-top: 0;
 }
 
+/* 图下面的分析文字：字号、颜色、行距同 .tech-lede，左右与图一样收进 --figure-inset */
+.tech-analysis {
+  color: #c9cfd9;
+  font-size: 15.5px;
+  line-height: 1.75;
+  margin: 16px 0 10px var(--figure-inset);
+  width: calc(100% - 2 * var(--figure-inset));
+}
+
+.tech-grid > .tech-analysis {
+  margin-top: 0;
+}
+
+.tech-analysis sub {
+  font-size: 0.72em;
+  line-height: 0;
+}
+
 .tech-main .table-card {
   margin-top: 16px;
 }
@@ -3159,6 +3177,7 @@ details.ev-item[open] .ev-toggle {
           </div>
           <figcaption><span class="paper-tag">Fig. 2</span><strong>Workflow of ATAS.</strong> A high-level prompt is parsed into multi-shot requests and bounded shot requests.</figcaption>
         </figure>
+        <p class="tech-analysis reveal">Each bounded request in Figure 2 carries a local description, a scene, a spatial anchor, a camera, a time interval, and an optional event. The description becomes the shot prompt. The scene field selects a re-rendered point-cloud reference from scene memory, the event field retrieves dynamic references from event memory, and the two together form the context-dependent prompt for the video generator. Shot validation then either asks for another candidate or sends the accepted observation to the state update, and the next request reads the updated state. A generated shot stays in the film whether or not its observation is added to the persistent state.</p>
       </section>
 
       <section id="components" class="tech-section" aria-labelledby="components-title">
@@ -3192,12 +3211,14 @@ details.ev-item[open] .ev-toggle {
             </div>
             <figcaption><span class="paper-tag">Fig. A</span><strong>Recursive screenplay compilation.</strong> The compiler turns a high-level request into bounded shot requests and uses validated state updates to condition subsequent requests.</figcaption>
           </figure>
+          <p class="tech-analysis reveal">The trace in Figure A starts from one screenplay request: Alice leaves the hall, walks into the courtyard, and the earlier fountain splash is then recaptured from another camera. The compiler splits it into three bounded requests (leaving the hall, approaching the fountain, and re-observing the splash), and each one reads the world state to fill in its spatial anchor and camera. The third request also carries the splash event and its earlier source interval, which is what lets dynamic evidence be selected for the recapture. All of this is resolved before any video is rendered, and every later request reads the validated state left by the earlier ones.</p>
           <figure class="paper-figure reveal">
             <div class="figure-plate">
               <img src="assets/paper/app_memory_construction.webp" width="2400" height="969" loading="lazy" decoding="async" alt="Scene and event memory">
             </div>
             <figcaption><span class="paper-tag">Fig. B</span><strong>Scene and event memory.</strong> The figure follows one accepted shot-local observation as static evidence is written to scene memory and dynamic evidence is indexed in event memory, then shows how both references condition a later camera request.</figcaption>
           </figure>
+          <p class="tech-analysis reveal">Figure B traces what happens to one accepted shot. Its static pixels are registered into the shared scene frame and extend the scene memory, while its dynamic frames and masks become a separate event record, indexed by event and source interval and kept unfused with the scene. A later request at a new camera uses only the scene render for a spatial revisit, and both the scene render and the retrieved event record for an event recapture. Keeping the two kinds of evidence apart prevents a visually similar frame from being retrieved when it belongs to the wrong occurrence.</p>
           <div class="table-card full-row reveal" role="region" aria-label="Memory statistics" tabindex="0">
             <table class="paper-table">
               <caption><span class="paper-tag">Tab. E</span><strong>Memory statistics.</strong> This analysis table reports memory growth and query cost at rollout checkpoints; it is not a sample manifest.</caption>
@@ -3359,6 +3380,7 @@ details.ev-item[open] .ev-toggle {
           </div>
           <figcaption><span class="paper-tag">Fig. 3</span><strong>Qualitative world-state rollout.</strong> Film frames and registered world views are shown for two story sequences.</figcaption>
         </figure>
+        <p class="tech-analysis reveal">Figure 3 stacks two stories, Winter Fire in the Cabin above and Saturday Laundry below; in each, the upper row is the film and the lower row the registered world view at the same shot. In both stories the character comes back to a place seen earlier, after other shots have intervened. The return frames keep the earlier scene layout and object state, and the world views tie each return to the spatial evidence accumulated during generation. Event memory appears in the world views as the person in each stored frame, with older frames drawn fainter.</p>
         <div class="finding-grid">
           <article class="tech-panel finding-card reveal">
             <p class="stat-key">Multi-shot benchmarks</p>
@@ -3390,6 +3412,7 @@ details.ev-item[open] .ev-toggle {
           </div>
           <figcaption><span class="paper-tag">Fig. 4</span><strong>Spatial revisit and historical event recapture.</strong> The top row uses a target image for spatial comparison; the bottom row uses source-grounded event evidence under a requested camera.</figcaption>
         </figure>
+        <p class="tech-analysis reveal">The left half of Figure 4 is spatial revisit in a tailor shop and a kitchen, with the start view and the generated return view for each method. The right half is event recapture in a museum storage room and a pottery studio, where the start and end frames of the source event sit next to the end of the recaptured clip. With registered scene geometry, ATAS has the strongest return-view agreement and the best value on all three measures in Table 2, which supports a shared scene frame for revisits. In Table 4 it leads event identity, temporal order, and viewpoint realization, while ReCA is slightly higher on action and state. ATAS therefore retrieves the requested occurrence and viewpoint more reliably than the baselines, and exact action-state reproduction remains the main difficulty.</p>
         <div class="tech-grid">
           <div class="table-card reveal" role="region" aria-label="Spatial revisit" tabindex="0">
             <table class="paper-table">
@@ -3493,6 +3516,7 @@ details.ev-item[open] .ev-toggle {
             </div>
             <figcaption><span class="paper-tag">Fig. 5</span><strong>Efficiency comparison across memory settings.</strong> Panels (a), (b), and (c) show runtime, candidate lifecycle, and retry and delivery measures across the six memory settings.</figcaption>
           </figure>
+          <p class="tech-analysis reveal">Each panel of Figure 5 orders the six memory settings from no memory to the full state. In panel (a), per-story wall-clock time rises from 51.9 to 64.9 minutes. In panel (b), the share of candidates rejected at film review falls at every step, from 52.6% to 36.8%, so the improvement already appears in the intermediate settings. In panel (c), retries drop from 1.00 to 0.54 per shot and retry-adjusted delivery time from 359 to 339 seconds per shot, while throughput falls from 7.28 to 6.21 shots per hour and memory overhead reaches 98 seconds per shot. The state pays for fewer retries and faster retry-adjusted delivery with a measurable amount of extra compute.</p>
           <figure class="paper-figure reveal">
             <div class="figure-plate">
               <img src="assets/paper/app_memory_sensitivity.webp" width="2400" height="788" loading="lazy" decoding="async" alt="Memory capacity and update sensitivity">
@@ -3513,6 +3537,7 @@ details.ev-item[open] .ev-toggle {
               </tbody>
             </table>
           </div>
+          <p class="tech-analysis reveal">Figure C and Table F change one property of the full update setting at a time. Updating only every third shot lowers C-Top10 from 0.719 to 0.685 and the event score from 0.739 to 0.732. Shrinking the scene capacity from 49.60 to 12.00 million units has the largest spatial effect, with C-Top10 at 0.638 and LPIPS<sub>C</sub> at 0.301. Shortening the event history leaves LPIPS<sub>C</sub> at 0.284 but cuts the event score to 0.608. Update frequency, scene capacity, and event history therefore act as separate controls: frequent updates cannot make up for a much smaller scene store, and a large scene store cannot replace missing event history.</p>
           <figure class="paper-figure reveal">
             <div class="figure-plate">
               <img src="assets/paper/app_staleness.webp" width="2400" height="844" loading="lazy" decoding="async" alt="Memory freshness and staleness">
@@ -3533,6 +3558,7 @@ details.ev-item[open] .ev-toggle {
               </tbody>
             </table>
           </div>
+          <p class="tech-analysis reveal">Figure D and Table G group requests by how many shots have passed since the last accepted update. All three measures get worse with distance: from zero to five or more intervening shots, C-Top10 falls from 0.736 to 0.651, LPIPS<sub>C</sub> rises from 0.276 to 0.306, and the event score falls from 0.762 to 0.678. The decline is gradual across the bins, so a stale state loses its usefulness step by step, with no single horizon at which it fails. The bins do not show whether the loss comes from scene changes, event density, or accumulated registration error.</p>
           <figure class="paper-figure reveal">
             <div class="figure-plate">
               <img src="assets/paper/app_update_check_tradeoff.webp" width="2400" height="821" loading="lazy" decoding="async" alt="State update check trade-off">
@@ -3552,6 +3578,7 @@ details.ev-item[open] .ev-toggle {
               </tbody>
             </table>
           </div>
+          <p class="tech-analysis reveal">Figure E and Table H vary how strict the state update check is. The permissive setting admits 90.0% of candidate updates and the strict setting only 36.0%, and both lose quality, with C-Top10 at 0.696 and 0.668 and event scores at 0.708 and 0.682. The default setting admits 67.4% and is best on all three measures, with 0.719 C-Top10, 0.284 LPIPS<sub>C</sub>, and a 0.739 event score. Admitting too much and rejecting too much can both reduce the evidence available to later requests. The result supports the check as a controlled admission step and does not show that the default threshold is optimal in general.</p>
         </div>
         <div class="finding-grid">
           <article class="tech-panel finding-card reveal">
@@ -3584,6 +3611,7 @@ details.ev-item[open] .ev-toggle {
           </div>
           <figcaption><span class="paper-tag">Fig. 6</span><strong>Human evaluation of agent methods.</strong> Grouped bars show mean ratings and standard-error whiskers for six methods across six criteria.</figcaption>
         </figure>
+        <p class="tech-analysis reveal">Each group of bars in Figure 6 is one criterion, and ATAS has the highest mean in every group. Its means are highest for script faithfulness (4.40), character consistency (4.22), and visual appeal (4.10), and lowest for background consistency (3.62) and narrative coherence (3.77). Raters therefore see most clearly that the shots follow the script and that characters carry over between shots. Consistency of the whole environment and coherence of the full story are less resolved.</p>
         <div class="tech-grid">
           <figure class="paper-figure reveal">
             <div class="figure-plate">
@@ -3597,12 +3625,14 @@ details.ev-item[open] .ev-toggle {
             </div>
             <figcaption><span class="paper-tag">Fig. G</span><strong>Distribution of human judgments.</strong> The heatmaps report mean ratings and the fraction of ratings above four for each criterion and method; the side panel summarizes inter-rater agreement.</figcaption>
           </figure>
+          <p class="tech-analysis reveal">Figure F is the page a rater sees: one anonymized long video, rated as a whole, so the consistency criteria cover the complete film. Figure G breaks the same ratings down by criterion and method, with mean ratings in the left heatmap, the share of ratings of at least four in the right heatmap, and the inter-rater agreement of each criterion at the side. ATAS reaches 57% to 95% ratings of at least four across criteria, against 14% to 64% for ReCA, the strongest baseline. Agreement coefficients range from 0.58 to 0.72, so the ordering does not rest on a criterion with unusually unstable ratings. Physical law and narrative coherence remain harder than script faithfulness and character consistency.</p>
           <figure class="paper-figure full-row reveal">
             <div class="figure-plate">
               <img src="assets/paper/app_human_agreement.webp" width="2400" height="937" loading="lazy" decoding="async" alt="Automatic-to-human agreement">
             </div>
             <figcaption><span class="paper-tag">Fig. H</span><strong>Automatic-to-human agreement.</strong> Spearman correlations compare the event-recapture and spatial-revisit diagnostics with human ratings on matched clips, alongside the human–human agreement ceiling.</figcaption>
           </figure>
+          <p class="tech-analysis reveal">Figure H measures how well the automatic diagnostics agree with human ratings on matched clips. The Spearman correlation is 0.61 for event identity, 0.54 for action and state, 0.49 for temporal phase, 0.41 for character and object, and 0.57 for viewpoint, and the spatial diagnostic, negated LPIPS<sub>C</sub>, reaches 0.44. The human–human ceilings are higher, from 0.67 to 0.80, which leaves room for evaluator noise and for aspects of perception that the scores do not capture. The automatic scores are useful as structured diagnostics, and human judgment is still needed alongside them.</p>
         </div>
         <div class="finding-grid">
           <article class="tech-panel finding-card reveal">
@@ -3642,18 +3672,21 @@ details.ev-item[open] .ev-toggle {
             </div>
             <figcaption><span class="paper-tag">Fig. K</span><strong>Representative multi-story results.</strong> The grid shows timestamped frames from six stories, illustrating the range of scenes, actions, and camera requests used in the qualitative evaluation.</figcaption>
           </figure>
+          <p class="tech-analysis reveal">In Figure I each row is one method and each column one shot of the record-shop or bakery story, so reading along a row shows whether room layout, object placement, and character state are still in place after the shots in between. A frame can look plausible on its own while the layout or an object's state has drifted, which a single global similarity score does not capture. The ATAS row is the reference for the intended behavior. Figure K widens the view to six stories whose frames cover different interior spaces, people, objects, and camera patterns, so the behavior is not tied to one setting.</p>
           <figure class="paper-figure full-row reveal">
             <div class="figure-plate">
               <img src="assets/paper/figI.webp" width="2400" height="482" loading="lazy" decoding="async" alt="Representative rollout timeline">
             </div>
             <figcaption><span class="paper-tag">Fig. J</span><strong>Representative rollout timeline.</strong> The timeline follows the generated film and memory condition through scene changes, a spatial revisit, and an event recapture request.</figcaption>
           </figure>
+          <p class="tech-analysis reveal">Figure J has three rows: the scene that each stretch of film belongs to, the generated film, and the memory condition used for each segment. The first segment in a new scene starts without memory, and the following segments in the same scene are conditioned on a stored earlier segment. Near the end the film returns to the kitchen and then to the backyard, and both returns are conditioned on segments stored during the first visits. Read together, the rows show when a scene state is created, when a later request queries it, and when the returned observation is written back.</p>
           <figure class="paper-figure full-row reveal">
             <div class="figure-plate">
               <img src="assets/paper/app_failure_taxonomy.webp" width="2400" height="786" loading="lazy" decoding="async" alt="Representative failure cases">
             </div>
             <figcaption><span class="paper-tag">Fig. L</span><strong>Representative failure cases.</strong> The examples distinguish generator-limited failures from failures in registration, event retrieval, camera realization, and state update.</figcaption>
           </figure>
+          <p class="tech-analysis reveal">Figure L shows six failure cases, grouped by the stage at which they enter the loop: one from generation, two from reconstruction, and three from registration. Generation failures, here extra objects that appear during a take, make the film inconsistent before memory is consulted. Reconstruction failures, such as adjacent chunks that do not align at their seam, prevent a reliable 3D observation, and registration failures, such as a take that shares no geometry with the stored scene, leave the film usable but block its alignment to that scene. The two status lines under each case record what happened to the film and whether the world was updated, which separates contained failures from propagated ones. A rejected observation costs latency without corrupting later state, while an incorrect update can make several later shots fail, which is why film review, registration, and the state update are separate decisions.</p>
         </div>
       </section>
 
