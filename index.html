@@ -2140,19 +2140,6 @@ details.ev-item[open] .ev-toggle {
   margin-bottom: 20px;
 }
 
-.tech-stat-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.tech-stat-card {
-  background: rgba(8, 12, 20, 0.56);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
-  padding: 12px 14px;
-}
-
 .stat-key {
   color: #91bfff;
   font-family: var(--mono);
@@ -2161,20 +2148,6 @@ details.ev-item[open] .ev-toggle {
   letter-spacing: 0.08em;
   margin-bottom: 6px;
   text-transform: uppercase;
-}
-
-.stat-value {
-  color: #fff;
-  font-size: 22px;
-  font-weight: 750;
-  line-height: 1.2;
-  margin-bottom: 4px;
-}
-
-.stat-desc {
-  color: #b9c4df;
-  font-size: 13px;
-  line-height: 1.45;
 }
 
 .tech-section {
@@ -2343,7 +2316,6 @@ details.ev-item[open] .ev-toggle {
 }
 
 @media (max-width: 1080px) {
-  .tech-stat-grid,
   .tech-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2402,7 +2374,6 @@ details.ev-item[open] .ev-toggle {
     font-size: 14px;
   }
 
-  .tech-stat-grid,
   .tech-card-grid {
     grid-template-columns: 1fr;
   }
@@ -3109,7 +3080,7 @@ details.ev-item[open] .ev-toggle {
     <main id="technical-details" class="page-view" hidden>
     <div class="container tech-main">
       <section class="tech-hero-panel reveal" aria-labelledby="tech-title">
-        <h1 id="tech-title">ATAS: Any Time, Any Space: A World-State-Centric Framework for Agentic Video Generation</h1>
+        <h1 id="tech-title">Any Time, Any Space: A World-State-Centric Framework for Agentic Video Generation</h1>
         <div class="tech-authors" aria-label="Authors">
           <a href="https://lhmd.top/" target="_blank" rel="noopener noreferrer">Weijie Wang<sup>1,*</sup></a>
           <a href="https://zhmin.top/" target="_blank" rel="noopener noreferrer">Haomin Zhang<sup>1,*</sup></a>
@@ -3122,38 +3093,6 @@ details.ev-item[open] .ev-toggle {
           <a href="https://bohanzhuang.github.io/" target="_blank" rel="noopener noreferrer">Bohan Zhuang<sup>1,†</sup></a>
         </div>
         <p class="tech-affiliations"><span><sup>1</sup>Zhejiang University</span><span><sup>2</sup>Monash University</span><span><sup>3</sup>Adelaide University</span><span><sup>*</sup>Equal contribution</span><span><sup>†</sup>Corresponding author</span></p>
-        <div class="tech-stat-grid">
-          <article class="tech-stat-card">
-            <p class="stat-key">Multi-shot benchmarks</p>
-            <p class="stat-value">0.734</p>
-            <p class="stat-desc">Average on Wan&nbsp;3.0; strongest baseline 0.648</p>
-          </article>
-          <article class="tech-stat-card">
-            <p class="stat-key">Backbones</p>
-            <p class="stat-value">4 / 4</p>
-            <p class="stat-desc">Best average on Wan&nbsp;3.0, MiniMax-H3, Wan&nbsp;2.7, and HappyHorse&nbsp;1.0</p>
-          </article>
-          <article class="tech-stat-card">
-            <p class="stat-key">Spatial revisit</p>
-            <p class="stat-value">15.968</p>
-            <p class="stat-desc">PSNR<sub>C</sub>, above every agent and both 3D-guided view-synthesis methods</p>
-          </article>
-          <article class="tech-stat-card">
-            <p class="stat-key">Event recapture</p>
-            <p class="stat-value">0.650</p>
-            <p class="stat-desc">Viewpoint score; ReCA 0.500</p>
-          </article>
-          <article class="tech-stat-card">
-            <p class="stat-key">Memory ablation</p>
-            <p class="stat-value">0.452 → 0.739</p>
-            <p class="stat-desc">Recapture score from no memory to the full state</p>
-          </article>
-          <article class="tech-stat-card">
-            <p class="stat-key">Human rating</p>
-            <p class="stat-value">4.40 / 5</p>
-            <p class="stat-desc">Script faithfulness; ATAS is highest on all six criteria</p>
-          </article>
-        </div>
       </section>
 
       <section id="abstract" class="tech-section" aria-labelledby="abstract-title">
